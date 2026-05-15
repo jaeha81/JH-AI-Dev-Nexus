@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JH AI Dev Nexus - AI Development Operating Program</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="workspace">
+      <section class="panel input-panel">
+        <div>
+          <p class="eyebrow">JH AI Dev Nexus</p>
+          <h1>AI Development Operating Program</h1>
+          <p class="hero-copy">Codex 중심으로 Goal Mode, LLM Wiki, provider, preview, GitHub, Obsidian, IDE adapter, tmux 2x2를 운영하는 설치형 개발 하네스입니다.</p>
+        </div>
+        <div id="goalModeStatus" class="mode-status">
+          <strong>JH Goal Mode</strong>
+          <strong data-i18n="goalModeActive">Goal Mode Active</strong>
+          <span data-i18n="modeFlow">TDD -> implementation -> verification -> wiki update</span>
+        </div>
+        <label class="language-setting">
+          <span data-i18n="language">언어</span>
+          <select id="languageSelect">
+            <option value="ko" selected>한국어</option>
+            <option value="en">English</option>
+          </select>
+        </label>
+        <label>
+          <span data-i18n="taskRequest">작업 요청</span>
+          <textarea id="task" placeholder="개발 작업을 입력하세요..."></textarea>
+        </label>
+        <div class="field-grid">
+          <label><span data-i18n="project">프로젝트</span><input id="projectName" value="JH Dev Nexus" /></label>
+          <label><span data-i18n="targetFolder">대상 폴더</span><input id="targetFolder" value="current workspace" /></label>
+          <label><span data-i18n="allowedScope">허용 범위</span><input id="allowedScope" value="Only files required for this task" /></label>
+          <label><span data-i18n="forbidden">금지 사항</span><textarea id="forbiddenActions">No secret exposure, production deploy, or destructive DB access</textarea></label>
+          <label><span data-i18n="verification">검증</span><input id="verificationCommands" value="npm run typecheck, npm test, npm run build" /></label>
+          <label>
+            <span data-i18n="risk">위험도</span>
+            <select id="riskLevel">
+              <option value="low">low</option>
+              <option value="medium" selected>medium</option>
+              <option value="high">high</option>
+            </select>
+          </label>
+        </div>
+        <div class="toggles">
+          <label><input id="strictVerification" type="checkbox" checked /> <span data-i18n="strictVerification">엄격 검증</span></label>
+          <label><input id="safeMode" type="checkbox" checked /> <span data-i18n="safeMode">안전 모드</span></label>
+        </div>
+        <button id="generate" data-i18n="generate">Goal 프롬프트 생성</button>
+        <p id="message" class="message" role="status"></p>
+      </section>
+
+      <section class="panel output-panel">
+        <div class="output-header">
+          <h2>Nexus Modules</h2>
+          <span id="moduleSummary" class="pill">13 modules</span>
+        </div>
+        <div id="nexusModules" class="module-grid">
+          <article data-module-id="goal-mode"><strong>Goal Mode</strong><span>Codex orchestration core</span><small>mvp</small></article>
+          <article data-module-id="session-handoff"><strong>Session Handoff</strong><span>Summary, LLM Wiki update, Obsidian save, next prompt</span><small>mvp</small></article>
+          <article data-module-id="llm-wiki"><strong>LLM Wiki</strong><span>Long-term state and handoff memory</span><small>mvp</small></article>
+          <article data-module-id="providers"><strong>Anthropic / GPT Providers</strong><span>Safe adapter line for model calls</span><small>mvp</small></article>
+          <article data-module-id="telegram-mobile"><strong>Telegram / Mobile</strong><span>Status, links, and notification access</span><small>mvp</small></article>
+          <article data-module-id="github"><strong>GitHub Line</strong><span>Repo, branch, PR, issue, actions flow</span><small>adapter-only</small></article>
+          <article data-module-id="obsidian"><strong>Obsidian</strong><span>Open LLM Wiki as vault documents</span><small>adapter-only</small></article>
+          <article data-module-id="preview-check"><strong>Development Preview</strong><span>Local URL, screenshot, console error check</span><small>mvp</small></article>
+          <article data-module-id="plugin-system"><strong>Plugin System</strong><span>Manifest, settings, safe permissions</span><small>placeholder</small></article>
+          <article data-module-id="skill-registry"><strong>Skill Registry</strong><span>Install, enable, docs, validation</span><small>placeholder</small></article>
+          <article data-module-id="ide-adapters"><strong>IDE Adapters</strong><span>VS Code, Cursor AI, Antigravity, Claude Code, Codex</span><small>adapter-only</small></article>
+          <article data-module-id="tmux-grid"><strong>tmux 2x2</strong><span>Dev server, logs, tests, command panel</span><small>adapter-only</small></article>
+          <article data-module-id="templates"><strong>Design / User / Developer Templates</strong><span>UI, user, admin, developer templates</span><small>mvp</small></article>
+          <article data-module-id="agent-room"><strong>Agent Room</strong><span>Collaboration module, not the program core</span><small>collaboration-module</small></article>
+        </div>
+        <div class="output-header">
+          <h2 data-i18n="generatedPrompts">생성된 프롬프트</h2>
+          <span id="category" class="pill">idle</span>
+        </div>
+        <article>
+          <div class="copy-row"><h3>Codex /goal</h3><button data-copy="codexOutput" data-i18n="copy">복사</button></div>
+          <textarea id="codexOutput" readonly></textarea>
+        </article>
+        <article>
+          <div class="copy-row"><h3>Claude Code Goal Mode</h3><button data-copy="claudeOutput" data-i18n="copy">복사</button></div>
+          <textarea id="claudeOutput" readonly></textarea>
+        </article>
+      </section>
+
+      <aside class="panel side-panel">
+        <h2 data-i18n="route">경로</h2>
+        <p id="route" class="route" data-i18n="noTask">생성된 작업 없음.</p>
+        <h2 data-i18n="checklist">체크리스트</h2>
+        <ul id="checklist"></ul>
+        <h2 data-i18n="risk">위험도</h2>
+        <ul id="warnings"></ul>
+        <h2 data-i18n="history">기록</h2>
+        <ol id="history"></ol>
+        <h2 data-i18n="previewArtifacts">미리보기 산출물</h2>
+        <div id="previewArtifacts" class="artifact-list">
+          <a href="/artifacts/playwright/goal-mode-desktop.png" target="_blank" rel="noreferrer" data-i18n="desktopScreenshot">데스크톱 스크린샷</a>
+          <a href="/artifacts/playwright/goal-mode-mobile.png" target="_blank" rel="noreferrer" data-i18n="mobileScreenshot">모바일 스크린샷</a>
+        </div>
+        <h2 data-i18n="mobileReadiness">모바일 알림 준비</h2>
+        <p id="mobileReadinessStatus" class="message" data-i18n="loadingMobileReadiness">모바일 설정 확인 중...</p>
+        <div id="mobileReadiness" class="validation-list"></div>
+        <div id="mobileSetupGuide" class="setup-guide">
+          <strong data-i18n="mobileSetupGuide">설정 안내</strong>
+          <p data-i18n="mobileSetupGuideText">실제 모바일 수신 전 아래 env 값을 설정한 뒤 mobile:status를 다시 확인하세요.</p>
+          <code>TELEGRAM_BOT_TOKEN</code>
+          <code>TELEGRAM_ALLOWED_CHAT_IDS</code>
+          <code>DISCORD_WEBHOOK_URL</code>
+          <code>DISCORD_ALLOWED_CHANNEL_IDS</code>
+          <div class="copy-row">
+            <code id="mobileStatusCommand">node dist/apps/cli/src/index.js mobile:status</code>
+            <button data-copy-text="mobileStatusCommand" data-i18n="copy">복사</button>
+          </div>
+        </div>
+        <h2 data-i18n="providerReadiness">AI Provider 준비</h2>
+        <p id="providerReadinessStatus" class="message" data-i18n="loadingProviderReadiness">AI provider 설정 확인 중...</p>
+        <div id="providerReadiness" class="validation-list"></div>
+        <div class="setup-guide">
+          <strong data-i18n="providerSetupGuide">Provider 설정 안내</strong>
+          <p data-i18n="providerSetupGuideText">실제 AI 호출 전 env 값을 설정한 뒤 provider:dry-run으로 먼저 확인하세요.</p>
+          <code>OPENAI_API_KEY</code>
+          <code>ANTHROPIC_API_KEY</code>
+          <div class="copy-row">
+            <code id="providerDryRunCommand">node dist/apps/cli/src/index.js provider:dry-run openai prompt:generate</code>
+            <button data-copy-text="providerDryRunCommand" data-i18n="copy">복사</button>
+          </div>
+          <div class="copy-row">
+            <code id="providerRuntimePlanCommand">node dist/apps/cli/src/index.js provider:runtime-plan openai prompt:generate "Summarize status"</code>
+            <button data-copy-text="providerRuntimePlanCommand" data-i18n="copy">복사</button>
+          </div>
+        </div>
+        <h2 data-i18n="sessionHandoff">Session Handoff</h2>
+        <p id="sessionHandoffStatus" class="message" data-i18n="loadingSessionHandoff">세션 인계 준비 중...</p>
+        <div id="sessionHandoff" class="validation-list"></div>
+        <div class="setup-guide">
+          <strong data-i18n="sessionHandoffGuide">Session Save / New Session</strong>
+          <p data-i18n="sessionHandoffGuideText">검증 후 LLM Wiki를 갱신하고 Obsidian 세션 저장 명령을 실행한 뒤 다음 세션 프롬프트로 재개합니다.</p>
+          <div class="copy-row">
+            <code id="sessionHandoffCommand">node dist/apps/cli/src/index.js session:handoff</code>
+            <button data-copy-text="sessionHandoffCommand" data-i18n="copy">복사</button>
+          </div>
+          <div class="copy-row">
+            <code id="nextSessionPrompt">작업 이어서 재개.</code>
+            <button data-copy-text="nextSessionPrompt" data-i18n="copy">복사</button>
+          </div>
+        </div>
+        <h2 data-i18n="recentValidation">최근 검증</h2>
+        <p id="validationStatus" class="message" data-i18n="loadingValidation">검증 결과 불러오는 중...</p>
+        <div id="recentValidation" class="validation-list"></div>
+      </aside>
+    </main>
+    <script type="module" src="./goal-mode.js"></script>
+  </body>
+</html>

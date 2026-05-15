@@ -1,0 +1,23 @@
+{
+  "name": "jh-ai-dev-nexus",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "goal": "node dist/apps/cli/src/index.js goal",
+    "preview:dashboard": "node dist/apps/web-dashboard/src/index.js",
+    "preview:capture": "node dist/scripts/preview-capture.js http://127.0.0.1:3100/ output/playwright/goal-mode.png",
+    "preview:capture:all": "node dist/scripts/preview-capture.js http://127.0.0.1:3100/ --all",
+    "preview:check": "node dist/scripts/preview-check.js",
+    "wiki:check": "node dist/apps/cli/src/index.js wiki:check"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "playwright": "^1.60.0",
+    "typescript": "^5.4.5",
+    "vitest": "^4.1.6"
+  }
+}
