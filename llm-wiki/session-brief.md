@@ -140,6 +140,24 @@
 ## Next Work
 - Improve Session Handoff panel presentation so long generated prompts are summarized first and full text remains copyable without dominating the dashboard column.
 
+## 2026-05-16 Session Handoff Panel UX Brief
+
+## Latest Completed Work
+- Replaced always-visible next-session prompt output with a collapsed `details` block.
+- Added `nextSessionPromptSummary` and `summarizeNextSessionPrompt` so the side panel shows a short line count summary first.
+- Kept full next-session prompt copy support through the existing copy button.
+- Added bounded prompt body styling with `max-height: 220px` for expanded state.
+
+## Verification
+- `npm.cmd run typecheck`: PASS
+- `npm.cmd test`: PASS, 17 files / 86 tests
+- `npm.cmd run build`: PASS
+- `npm.cmd run wiki:check`: PASS
+- `npm.cmd run preview:check`: PASS, desktop/mobile consoleErrors=0
+
+## Next Work
+- Consider adding a smaller command summary under Session Handoff if the command list grows beyond the current wiki/save pair.
+
 ## 2026-05-16 Nexus Module Registry CLI/API Brief
 
 ## Latest Completed Work

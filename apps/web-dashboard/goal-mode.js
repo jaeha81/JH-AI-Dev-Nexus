@@ -491,11 +491,19 @@ async function loadProviderReadiness() {
   }
 }
 
+function summarizeNextSessionPrompt(prompt) {
+  const lines = prompt.split("\n").map((line) => line.trim()).filter(Boolean);
+  const firstLine = lines[0] || "Next session prompt ready.";
+  const capped = firstLine.length > 80 ? `${firstLine.slice(0, 77)}...` : firstLine;
+  return `${capped} (${lines.length} lines)`;
+}
+
 function renderSessionHandoff(plan) {
   const list = $("sessionHandoff");
   list.replaceChildren();
   $("sessionHandoffStatus").textContent = text("sessionHandoffReady");
   $("nextSessionPrompt").textContent = plan.nextSessionPrompt;
+  $("nextSessionPromptSummary").textContent = summarizeNextSessionPrompt(plan.nextSessionPrompt);
 
   const article = document.createElement("article");
   article.className = "validation-item";

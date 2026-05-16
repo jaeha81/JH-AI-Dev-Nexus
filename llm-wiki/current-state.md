@@ -90,6 +90,12 @@
 - The collector filters `.env` paths from changed-file summaries, redacts obvious secret/token patterns, and limits validation command output to recent entries.
 - Verification: `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `npm.cmd run wiki:check`, `npm.cmd run preview:check` all PASS.
 
+## 2026-05-16 Session Handoff Panel UX Update
+- Dashboard Session Handoff no longer prints the full next-session prompt inline by default.
+- Added a compact summary line with a collapsed `<details>` prompt body and preserved full prompt copy support.
+- Added CSS constraints so the prompt body has a bounded scroll area when expanded.
+- Verification: `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `npm.cmd run wiki:check`, and `npm.cmd run preview:check` all PASS with desktop/mobile consoleErrors=0.
+
 ## 2026-05-16 Nexus Module Registry CLI/API Update
 - CLI now exposes the Nexus module registry through `modules`, including summary counts and module id/policy/role lines.
 - Dashboard preview server now exposes `/api/modules` with `{ summary, modules }` JSON from `packages/core/src/nexus-modules.ts`.

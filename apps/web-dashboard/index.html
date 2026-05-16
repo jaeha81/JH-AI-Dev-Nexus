@@ -144,8 +144,12 @@
             <code id="sessionHandoffCommand">node dist/apps/cli/src/index.js session:handoff</code>
             <button data-copy-text="sessionHandoffCommand" data-i18n="copy">복사</button>
           </div>
-          <div class="copy-row">
+          <details id="nextSessionPromptDetails" class="handoff-prompt">
+            <summary id="nextSessionPromptSummary">Next session prompt ready.</summary>
             <code id="nextSessionPrompt">작업 이어서 재개.</code>
+          </details>
+          <div class="copy-row">
+            <span class="message">Full next-session prompt</span>
             <button data-copy-text="nextSessionPrompt" data-i18n="copy">복사</button>
           </div>
         </div>

@@ -53,6 +53,8 @@ describe("JH Goal Mode dashboard UI", () => {
     expect(html).toContain('id="sessionHandoff"');
     expect(html).toContain('id="sessionHandoffCommand"');
     expect(html).toContain('id="nextSessionPrompt"');
+    expect(html).toContain('id="nextSessionPromptSummary"');
+    expect(html).toContain('id="nextSessionPromptDetails"');
     expect(html).toContain('data-copy-text="sessionHandoffCommand"');
     expect(html).toContain('data-copy-text="nextSessionPrompt"');
     expect(html).toContain('id="mobileSetupGuide"');
@@ -88,6 +90,7 @@ describe("JH Goal Mode dashboard UI", () => {
     expect(script).toContain("renderMobileReadiness");
     expect(script).toContain("renderProviderReadiness");
     expect(script).toContain("renderSessionHandoff");
+    expect(script).toContain("summarizeNextSessionPrompt");
     expect(script).toContain("Task request is required.");
   });
 
@@ -96,6 +99,8 @@ describe("JH Goal Mode dashboard UI", () => {
 
     expect(styles).toContain(".setup-guide .copy-row");
     expect(styles).toContain("white-space: nowrap");
+    expect(styles).toContain(".handoff-prompt");
+    expect(styles).toContain("max-height: 220px");
     expect(styles).toContain(".module-grid article");
     expect(styles).toContain("overflow-wrap: anywhere");
   });
