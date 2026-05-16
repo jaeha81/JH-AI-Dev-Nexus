@@ -158,10 +158,31 @@ function applyLanguage(language) {
   $("task").placeholder = translations[normalized].taskPlaceholder;
 }
 
+function renderModuleOperationalState(module) {
+  const state = document.createElement("div");
+  state.className = `module-status status-${module.status || "needs-configuration"}`;
+
+  const status = document.createElement("small");
+  status.textContent = `status=${module.status || "needs-configuration"}`;
+  state.appendChild(status);
+
+  const flags = document.createElement("small");
+  flags.textContent = `enabled=${Boolean(module.enabled)} configured=${Boolean(module.configured)}`;
+  state.appendChild(flags);
+
+  const missing = document.createElement("small");
+  const missingRequirements = module.missingRequirements || [];
+  missing.textContent = `missing=${missingRequirements.length ? missingRequirements.join(", ") : "none"}`;
+  state.appendChild(missing);
+
+  return state;
+}
+
 function renderNexusModules(payload) {
   const modules = payload.modules || [];
   const summary = payload.summary || {};
   const list = $("nexusModules");
+  list.classList.add("status-console");
   list.replaceChildren();
 
   modules.forEach((module) => {
@@ -180,10 +201,12 @@ function renderNexusModules(payload) {
     policy.textContent = module.mvpPolicy;
     article.appendChild(policy);
 
+    article.appendChild(renderModuleOperationalState(module));
+
     list.appendChild(article);
   });
 
-  $("moduleSummary").textContent = `${summary.total || modules.length} modules / MVP ${summary.mvpReady || 0}`;
+  $("moduleSummary").textContent = `${summary.total || modules.length} modules / ready ${summary.ready || 0} / config ${summary.needsConfiguration || 0}`;
 }
 
 function renderStaticNexusModuleFallback() {

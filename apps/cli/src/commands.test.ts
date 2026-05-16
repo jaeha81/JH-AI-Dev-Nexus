@@ -29,8 +29,11 @@ describe("CLI commands", () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("total=14");
     expect(result.stdout).toContain("mvpReady=");
-    expect(result.stdout).toContain("module=goal-mode policy=mvp role=orchestration-core");
-    expect(result.stdout).toContain("module=agent-room policy=adapter-only role=collaboration-module");
+    expect(result.stdout).toContain("ready=");
+    expect(result.stdout).toContain("needsConfiguration=");
+    expect(result.stdout).toContain("module=goal-mode status=ready enabled=true configured=true");
+    expect(result.stdout).toContain("module=agent-room status=needs-configuration enabled=true configured=false");
+    expect(result.stdout).toContain("missing=Agent Room queue endpoint");
     expect(result.stdout).not.toContain("sk-");
     expect(result.stdout).not.toContain("token=");
   });

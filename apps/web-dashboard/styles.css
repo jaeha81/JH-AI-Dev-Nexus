@@ -204,7 +204,7 @@ button {
   border-radius: 6px;
   display: grid;
   gap: 4px;
-  min-height: 84px;
+  min-height: 132px;
   padding: 10px;
 }
 
@@ -229,6 +229,36 @@ button {
   align-self: end;
   color: var(--accent);
   font-size: 11px;
+}
+
+.status-console article {
+  align-content: start;
+}
+
+.module-status {
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 2px;
+  margin-top: 4px;
+  padding-top: 6px;
+}
+
+.module-status small {
+  align-self: auto;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+}
+
+.status-ready small:first-child {
+  color: #15803d;
+}
+
+.status-needs-configuration small:first-child {
+  color: #b45309;
+}
+
+.status-disabled small:first-child {
+  color: #737373;
 }
 
 ul,

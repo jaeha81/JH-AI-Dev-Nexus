@@ -177,3 +177,23 @@
 
 ## Note
 - A stale server was already listening on `127.0.0.1:3100` and returned HTML for `/api/modules`; the dashboard fallback now prevents visible UI breakage, while the updated preview server code exposes the JSON endpoint after restart.
+
+## 2026-05-17 Nexus Module Operational Status Brief
+
+## Latest Completed Work
+- Added operational state fields to each Nexus module: `enabled`, `configured`, `missingRequirements`, and `status`.
+- Added summary counts for enabled/configured/ready/needs-configuration/disabled modules.
+- Updated CLI `modules` output so it reads as an operations console with status flags and missing requirements.
+- Updated dashboard module rendering to show status, enabled/configured flags, and missing requirements per card.
+
+## Verification
+- RED confirmed for missing status fields and missing CLI/API/dashboard status rendering.
+- GREEN confirmed for targeted core/CLI/API/dashboard tests.
+- `npm.cmd run typecheck`: PASS
+- `npm.cmd test`: PASS, 17 files / 89 tests
+- `npm.cmd run build`: PASS
+- `npm.cmd run wiki:check`: PASS
+- `npm.cmd run preview:check`: PASS after browser launch approval, desktop/mobile consoleErrors=0
+
+## Note
+- PowerShell profile execution policy warnings and user git ignore permission warnings still appear around commands, but they did not block verification.

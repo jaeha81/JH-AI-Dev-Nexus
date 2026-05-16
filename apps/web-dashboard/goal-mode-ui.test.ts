@@ -18,6 +18,9 @@ describe("JH Goal Mode dashboard UI", () => {
     expect(script).toContain("loadNexusModules");
     expect(script).toContain("renderNexusModules");
     expect(script).toContain("renderStaticNexusModuleFallback");
+    expect(script).toContain("renderModuleOperationalState");
+    expect(script).toContain("status-console");
+    expect(script).toContain("missingRequirements");
     expect(script).toContain("content-type");
     expect(script).not.toContain("const nexusModules = [");
   });
@@ -102,6 +105,8 @@ describe("JH Goal Mode dashboard UI", () => {
     expect(styles).toContain(".handoff-prompt");
     expect(styles).toContain("max-height: 220px");
     expect(styles).toContain(".module-grid article");
+    expect(styles).toContain(".module-status");
+    expect(styles).toContain(".status-console");
     expect(styles).toContain("overflow-wrap: anywhere");
   });
 });

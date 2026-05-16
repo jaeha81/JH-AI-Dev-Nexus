@@ -138,3 +138,12 @@
 - Dashboard behavior: module cards now fetch `/api/modules` and render registry data; stale server HTML fallback is handled without user-visible JSON parse errors.
 - Verification complete: `typecheck`, `test`, `build`, `wiki:check`, and `preview:check` passed; desktop/mobile screenshots show `14 modules / MVP 7`.
 - Next recommended work: restart the Dev Nexus preview server on port 3100 so the live `/api/modules` route is served by the updated compiled server instead of the stale fallback process.
+
+## 2026-05-17 Nexus Module Operational Status Handoff
+- Completed the requested module registry status work.
+- Core registry: every module now has `enabled`, `configured`, `missingRequirements`, and `status`.
+- Summary: `getNexusModuleSummary()` now returns enabled/configured/ready/needs-configuration/disabled counts.
+- CLI command: `node dist/apps/cli/src/index.js modules` now prints per-module operational status, config flags, and missing requirements.
+- Dashboard: module cards now render a compact status console using `/api/modules`; screenshots were refreshed by `preview:check`.
+- Verification complete: RED targeted tests failed for missing status contract, then `typecheck`, full `test`, `build`, `wiki:check`, and approved `preview:check` passed.
+- Remaining risk: local PowerShell profile and global git ignore permission warnings still appear during commands; they are environment warnings, not feature failures.

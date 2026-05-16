@@ -104,11 +104,20 @@ export function runCommand(args: string[], dependencies: CommandDependencies = {
         `adapterOnly=${summary.adapterOnly}`,
         `placeholder=${summary.placeholder}`,
         `deferred=${summary.deferred}`,
+        `enabled=${summary.enabled}`,
+        `configured=${summary.configured}`,
+        `ready=${summary.ready}`,
+        `needsConfiguration=${summary.needsConfiguration}`,
+        `disabled=${summary.disabled}`,
         ...getNexusModules().map((module) =>
           [
             `module=${module.id}`,
+            `status=${module.status}`,
+            `enabled=${module.enabled}`,
+            `configured=${module.configured}`,
             `policy=${module.mvpPolicy}`,
             `role=${module.role}`,
+            `missing=${module.missingRequirements.length ? module.missingRequirements.join("|") : "none"}`,
             `label=${module.label}`
           ].join(" ")
         )

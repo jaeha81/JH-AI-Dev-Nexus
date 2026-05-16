@@ -156,10 +156,20 @@ describe("web dashboard preview server", () => {
 
     expect(payload.summary.total).toBe(14);
     expect(payload.summary.mvpReady).toBeGreaterThan(0);
+    expect(payload.summary.ready).toBeGreaterThan(0);
+    expect(payload.summary.needsConfiguration).toBeGreaterThan(0);
     expect(payload.modules.map((module: { id: string }) => module.id)).toContain("goal-mode");
-    expect(payload.modules.find((module: { id: string }) => module.id === "agent-room").role).toBe(
-      "collaboration-module"
-    );
+    expect(payload.modules.find((module: { id: string }) => module.id === "goal-mode")).toMatchObject({
+      status: "ready",
+      enabled: true,
+      configured: true,
+      missingRequirements: []
+    });
+    expect(payload.modules.find((module: { id: string }) => module.id === "agent-room")).toMatchObject({
+      role: "collaboration-module",
+      status: "needs-configuration",
+      missingRequirements: ["Agent Room queue endpoint"]
+    });
     expect(json).not.toContain("sk-secret-value");
     expect(json).not.toContain("token=");
   });

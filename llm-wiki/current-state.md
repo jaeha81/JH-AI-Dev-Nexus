@@ -101,3 +101,10 @@
 - Dashboard preview server now exposes `/api/modules` with `{ summary, modules }` JSON from `packages/core/src/nexus-modules.ts`.
 - Dashboard module cards now load from `/api/modules`; if a stale preview server returns HTML for that route, the UI falls back to existing static cards and computes the visible summary.
 - Verification: `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `npm.cmd run wiki:check`, and `npm.cmd run preview:check` all PASS; screenshots show `14 modules / MVP 7` with no visible JSON parse error.
+
+## 2026-05-17 Nexus Module Operational Status Update
+- Added `enabled`, `configured`, `missingRequirements`, and `status` to every Nexus module registry entry.
+- Module summary now includes enabled/configured/ready/needs-configuration/disabled counts.
+- CLI `modules` now prints operational status, configuration flags, and missing requirements per module.
+- Dashboard module cards now render as a compact status console instead of a simple policy list.
+- Verification: RED confirmed on new status contract, then `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `npm.cmd run wiki:check`, and approved `npm.cmd run preview:check` all PASS.
