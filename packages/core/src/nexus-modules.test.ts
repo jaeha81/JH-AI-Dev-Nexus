@@ -71,4 +71,47 @@ describe("Nexus module registry", () => {
     expect(JSON.stringify(modules)).not.toContain("sk-secret-value");
     expect(JSON.stringify(modules)).not.toContain("token=");
   });
+
+  it("derives configurable module readiness from environment settings without exposing values", () => {
+    const env = {
+      OPENAI_API_KEY: "sk-secret-value",
+      TELEGRAM_BOT_TOKEN: "telegram-secret",
+      TELEGRAM_ALLOWED_CHAT_IDS: "123",
+      GITHUB_TOKEN: "ghp-secret-value",
+      OBSIDIAN_VAULT_PATH: "G:/vault",
+      AGENT_ROOM_BASE_URL: "http://127.0.0.1:3100"
+    };
+    const modules = getNexusModules({ env });
+    const summary = getNexusModuleSummary({ env });
+
+    expect(modules.find((module) => module.id === "providers")).toMatchObject({
+      configured: true,
+      status: "ready",
+      missingRequirements: []
+    });
+    expect(modules.find((module) => module.id === "telegram-mobile")).toMatchObject({
+      configured: true,
+      status: "ready",
+      missingRequirements: []
+    });
+    expect(modules.find((module) => module.id === "github")).toMatchObject({
+      configured: true,
+      status: "ready",
+      missingRequirements: []
+    });
+    expect(modules.find((module) => module.id === "obsidian")).toMatchObject({
+      configured: true,
+      status: "ready",
+      missingRequirements: []
+    });
+    expect(modules.find((module) => module.id === "agent-room")).toMatchObject({
+      configured: true,
+      status: "ready",
+      missingRequirements: []
+    });
+    expect(summary.ready).toBeGreaterThan(5);
+    expect(JSON.stringify({ modules, summary })).not.toContain("sk-secret-value");
+    expect(JSON.stringify({ modules, summary })).not.toContain("telegram-secret");
+    expect(JSON.stringify({ modules, summary })).not.toContain("ghp-secret-value");
+  });
 });

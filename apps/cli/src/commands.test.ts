@@ -24,7 +24,7 @@ describe("CLI commands", () => {
   });
 
   it("returns Nexus module registry summary without exposing secrets", () => {
-    const result = runCommand(["modules"]);
+    const result = runCommand(["modules"], { env: {} });
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("total=14");
@@ -33,9 +33,32 @@ describe("CLI commands", () => {
     expect(result.stdout).toContain("needsConfiguration=");
     expect(result.stdout).toContain("module=goal-mode status=ready enabled=true configured=true");
     expect(result.stdout).toContain("module=agent-room status=needs-configuration enabled=true configured=false");
-    expect(result.stdout).toContain("missing=Agent Room queue endpoint");
+    expect(result.stdout).toContain("missing=AGENT_ROOM_BASE_URL");
     expect(result.stdout).not.toContain("sk-");
     expect(result.stdout).not.toContain("token=");
+  });
+
+  it("uses injected env to show configured module readiness without exposing secret values", () => {
+    const result = runCommand(["modules"], {
+      env: {
+        OPENAI_API_KEY: "sk-secret-value",
+        TELEGRAM_BOT_TOKEN: "telegram-secret",
+        TELEGRAM_ALLOWED_CHAT_IDS: "123",
+        GITHUB_TOKEN: "ghp-secret-value",
+        OBSIDIAN_VAULT_PATH: "G:/vault",
+        AGENT_ROOM_BASE_URL: "http://127.0.0.1:3100"
+      }
+    });
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("module=providers status=ready enabled=true configured=true");
+    expect(result.stdout).toContain("module=telegram-mobile status=ready enabled=true configured=true");
+    expect(result.stdout).toContain("module=github status=ready enabled=true configured=true");
+    expect(result.stdout).toContain("module=obsidian status=ready enabled=true configured=true");
+    expect(result.stdout).toContain("module=agent-room status=ready enabled=true configured=true");
+    expect(result.stdout).not.toContain("sk-secret-value");
+    expect(result.stdout).not.toContain("telegram-secret");
+    expect(result.stdout).not.toContain("ghp-secret-value");
   });
 
   it("returns registered mobile connectors", () => {

@@ -152,10 +152,10 @@ export function readProviderReadinessJson(env: Record<string, string | undefined
   });
 }
 
-export function readNexusModulesJson(): string {
+export function readNexusModulesJson(env: Record<string, string | undefined> = process.env): string {
   return JSON.stringify({
-    summary: getNexusModuleSummary(),
-    modules: getNexusModules()
+    summary: getNexusModuleSummary({ env }),
+    modules: getNexusModules({ env })
   });
 }
 

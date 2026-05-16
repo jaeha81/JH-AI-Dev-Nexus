@@ -147,3 +147,12 @@
 - Dashboard: module cards now render a compact status console using `/api/modules`; screenshots were refreshed by `preview:check`.
 - Verification complete: RED targeted tests failed for missing status contract, then `typecheck`, full `test`, `build`, `wiki:check`, and approved `preview:check` passed.
 - Remaining risk: local PowerShell profile and global git ignore permission warnings still appear during commands; they are environment warnings, not feature failures.
+
+## 2026-05-17 Runtime Module Readiness Handoff
+- Completed runtime env-derived readiness for configurable Nexus modules.
+- `getNexusModules({ env })` and `getNexusModuleSummary({ env })` now calculate readiness from env presence while returning only env names/missing requirements, never values.
+- CLI `modules` passes runtime env by default and supports injected env in tests.
+- Dashboard `/api/modules` passes runtime env into the same calculation.
+- Added safe config metadata for `AGENT_ROOM_BASE_URL`.
+- Verification complete: RED injected-env tests failed first, then `typecheck`, full `test`, `build`, `wiki:check`, and approved `preview:check` passed.
+- Next recommended work: add module enable-disable settings storage and dashboard/API controls.

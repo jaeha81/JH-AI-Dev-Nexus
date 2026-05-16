@@ -197,3 +197,24 @@
 
 ## Note
 - PowerShell profile execution policy warnings and user git ignore permission warnings still appear around commands, but they did not block verification.
+
+## 2026-05-17 Runtime Module Readiness Brief
+
+## Latest Completed Work
+- Converted module readiness from static metadata to runtime env-derived status for configurable modules.
+- `providers` becomes ready when `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` exists.
+- `telegram-mobile` becomes ready when either Telegram token/chat IDs or Discord webhook/channel IDs exist.
+- `github`, `obsidian`, and `agent-room` now use `GITHUB_TOKEN`, `OBSIDIAN_VAULT_PATH`, and `AGENT_ROOM_BASE_URL`.
+- CLI `modules` and dashboard `/api/modules` now use the same runtime calculation and still avoid exposing secret values.
+
+## Verification
+- RED confirmed for missing runtime status calculation.
+- GREEN confirmed for targeted core/CLI/API tests.
+- `npm.cmd run typecheck`: PASS
+- `npm.cmd test`: PASS, 17 files / 92 tests
+- `npm.cmd run build`: PASS
+- `npm.cmd run wiki:check`: PASS
+- `npm.cmd run preview:check`: PASS after browser launch approval, desktop/mobile consoleErrors=0
+
+## Next Work
+- Add dashboard controls/API for module enable-disable settings instead of only displaying detected readiness.

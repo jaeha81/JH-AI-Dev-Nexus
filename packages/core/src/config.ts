@@ -13,6 +13,7 @@ export type HarnessConfig = {
     obsidianVaultPath: string;
     discordWebhookUrl: string;
     discordAllowedChannelIds: string;
+    agentRoomBaseUrl: string;
   };
 };
 
@@ -31,7 +32,8 @@ export function createDefaultConfig(): HarnessConfig {
       github: "GITHUB_TOKEN",
       obsidianVaultPath: "OBSIDIAN_VAULT_PATH",
       discordWebhookUrl: "DISCORD_WEBHOOK_URL",
-      discordAllowedChannelIds: "DISCORD_ALLOWED_CHANNEL_IDS"
+      discordAllowedChannelIds: "DISCORD_ALLOWED_CHANNEL_IDS",
+      agentRoomBaseUrl: "AGENT_ROOM_BASE_URL"
     }
   };
 }
@@ -47,6 +49,7 @@ export function getRequiredSecretNames(): string[] {
     secrets.github,
     secrets.obsidianVaultPath,
     secrets.discordWebhookUrl,
-    secrets.discordAllowedChannelIds
+    secrets.discordAllowedChannelIds,
+    secrets.agentRoomBaseUrl
   ];
 }

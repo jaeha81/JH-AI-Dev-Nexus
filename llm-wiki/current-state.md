@@ -108,3 +108,10 @@
 - CLI `modules` now prints operational status, configuration flags, and missing requirements per module.
 - Dashboard module cards now render as a compact status console instead of a simple policy list.
 - Verification: RED confirmed on new status contract, then `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `npm.cmd run wiki:check`, and approved `npm.cmd run preview:check` all PASS.
+
+## 2026-05-17 Runtime Module Readiness Update
+- Nexus module readiness now derives configurable module status from runtime env names without exposing values.
+- Provider, mobile, GitHub, Obsidian, and Agent Room modules can move from `needs-configuration` to `ready` when required env settings are present.
+- Added `AGENT_ROOM_BASE_URL` to safe config/env metadata.
+- CLI `modules` and dashboard `/api/modules` both use runtime env status calculation.
+- Verification: RED confirmed on injected env tests, then `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `npm.cmd run wiki:check`, and approved `npm.cmd run preview:check` all PASS.

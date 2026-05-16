@@ -95,7 +95,8 @@ export function runCommand(args: string[], dependencies: CommandDependencies = {
   }
 
   if (command === "modules") {
-    const summary = getNexusModuleSummary();
+    const env = dependencies.env ?? process.env;
+    const summary = getNexusModuleSummary({ env });
     return {
       exitCode: 0,
       stdout: [
@@ -109,7 +110,7 @@ export function runCommand(args: string[], dependencies: CommandDependencies = {
         `ready=${summary.ready}`,
         `needsConfiguration=${summary.needsConfiguration}`,
         `disabled=${summary.disabled}`,
-        ...getNexusModules().map((module) =>
+        ...getNexusModules({ env }).map((module) =>
           [
             `module=${module.id}`,
             `status=${module.status}`,

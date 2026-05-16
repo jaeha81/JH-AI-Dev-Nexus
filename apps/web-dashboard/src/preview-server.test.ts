@@ -151,7 +151,7 @@ describe("web dashboard preview server", () => {
   });
 
   it("builds Nexus module registry JSON for the dashboard without exposing secrets", () => {
-    const json = readNexusModulesJson();
+    const json = readNexusModulesJson({});
     const payload = JSON.parse(json);
 
     expect(payload.summary.total).toBe(14);
@@ -168,10 +168,36 @@ describe("web dashboard preview server", () => {
     expect(payload.modules.find((module: { id: string }) => module.id === "agent-room")).toMatchObject({
       role: "collaboration-module",
       status: "needs-configuration",
-      missingRequirements: ["Agent Room queue endpoint"]
+      missingRequirements: ["AGENT_ROOM_BASE_URL"]
     });
     expect(json).not.toContain("sk-secret-value");
     expect(json).not.toContain("token=");
+  });
+
+  it("builds Nexus module JSON from runtime env without exposing values", () => {
+    const json = readNexusModulesJson({
+      OPENAI_API_KEY: "sk-secret-value",
+      TELEGRAM_BOT_TOKEN: "telegram-secret",
+      TELEGRAM_ALLOWED_CHAT_IDS: "123",
+      GITHUB_TOKEN: "ghp-secret-value",
+      OBSIDIAN_VAULT_PATH: "G:/vault",
+      AGENT_ROOM_BASE_URL: "http://127.0.0.1:3100"
+    });
+    const payload = JSON.parse(json);
+
+    expect(payload.modules.find((module: { id: string }) => module.id === "providers")).toMatchObject({
+      status: "ready",
+      configured: true,
+      missingRequirements: []
+    });
+    expect(payload.modules.find((module: { id: string }) => module.id === "agent-room")).toMatchObject({
+      status: "ready",
+      configured: true,
+      missingRequirements: []
+    });
+    expect(json).not.toContain("sk-secret-value");
+    expect(json).not.toContain("telegram-secret");
+    expect(json).not.toContain("ghp-secret-value");
   });
 
   it("builds session handoff JSON for dashboard commands without exposing secrets", () => {

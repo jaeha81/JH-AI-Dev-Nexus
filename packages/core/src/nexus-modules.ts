@@ -1,3 +1,5 @@
+import { createDefaultConfig } from "./config.js";
+
 export type NexusModulePolicy = "mvp" | "adapter-only" | "placeholder" | "deferred";
 export type NexusModuleStatus = "ready" | "needs-configuration" | "disabled";
 
@@ -29,6 +31,10 @@ export type NexusModule = {
   outputs: string[];
   connectsTo: string[];
   blockedActions: string[];
+};
+
+export type NexusModuleRuntimeOptions = {
+  env?: Record<string, string | undefined>;
 };
 
 const sharedBlockedActions = [
@@ -251,24 +257,94 @@ const nexusModules: NexusModule[] = [
   }
 ];
 
-export function getNexusModules(): readonly NexusModule[] {
-  return nexusModules;
+function hasSetting(env: Record<string, string | undefined>, name: string): boolean {
+  return Boolean(env[name]?.trim());
 }
 
-export function getNexusModuleSummary() {
-  const blockedActions = Array.from(new Set(nexusModules.flatMap((module) => module.blockedActions))).sort();
+function withRuntimeStatus(module: NexusModule, env: Record<string, string | undefined>): NexusModule {
+  const { secrets } = createDefaultConfig();
+  const cloned = { ...module, missingRequirements: [...module.missingRequirements] };
+
+  if (!cloned.enabled || cloned.status === "disabled") return cloned;
+
+  if (cloned.id === "providers") {
+    const configured = hasSetting(env, secrets.openai) || hasSetting(env, secrets.anthropic);
+    return {
+      ...cloned,
+      configured,
+      missingRequirements: configured ? [] : [`${secrets.openai} or ${secrets.anthropic}`],
+      status: configured ? "ready" : "needs-configuration"
+    };
+  }
+
+  if (cloned.id === "telegram-mobile") {
+    const telegramConfigured = hasSetting(env, secrets.telegram) && hasSetting(env, secrets.telegramAllowedChatIds);
+    const discordConfigured = hasSetting(env, secrets.discordWebhookUrl) && hasSetting(env, secrets.discordAllowedChannelIds);
+    const configured = telegramConfigured || discordConfigured;
+    return {
+      ...cloned,
+      configured,
+      missingRequirements: configured
+        ? []
+        : [
+            `${secrets.telegram}+${secrets.telegramAllowedChatIds} or ${secrets.discordWebhookUrl}+${secrets.discordAllowedChannelIds}`
+          ],
+      status: configured ? "ready" : "needs-configuration"
+    };
+  }
+
+  if (cloned.id === "github") {
+    const configured = hasSetting(env, secrets.github);
+    return {
+      ...cloned,
+      configured,
+      missingRequirements: configured ? [] : [secrets.github],
+      status: configured ? "ready" : "needs-configuration"
+    };
+  }
+
+  if (cloned.id === "obsidian") {
+    const configured = hasSetting(env, secrets.obsidianVaultPath);
+    return {
+      ...cloned,
+      configured,
+      missingRequirements: configured ? [] : [secrets.obsidianVaultPath],
+      status: configured ? "ready" : "needs-configuration"
+    };
+  }
+
+  if (cloned.id === "agent-room") {
+    const configured = hasSetting(env, secrets.agentRoomBaseUrl);
+    return {
+      ...cloned,
+      configured,
+      missingRequirements: configured ? [] : [secrets.agentRoomBaseUrl],
+      status: configured ? "ready" : "needs-configuration"
+    };
+  }
+
+  return cloned;
+}
+
+export function getNexusModules(options: NexusModuleRuntimeOptions = {}): readonly NexusModule[] {
+  return nexusModules.map((module) => withRuntimeStatus(module, options.env ?? {}));
+}
+
+export function getNexusModuleSummary(options: NexusModuleRuntimeOptions = {}) {
+  const modules = getNexusModules(options);
+  const blockedActions = Array.from(new Set(modules.flatMap((module) => module.blockedActions))).sort();
 
   return {
-    total: nexusModules.length,
-    mvpReady: nexusModules.filter((module) => module.mvpPolicy === "mvp").length,
-    adapterOnly: nexusModules.filter((module) => module.mvpPolicy === "adapter-only").length,
-    placeholder: nexusModules.filter((module) => module.mvpPolicy === "placeholder").length,
-    deferred: nexusModules.filter((module) => module.mvpPolicy === "deferred").length,
-    enabled: nexusModules.filter((module) => module.enabled).length,
-    configured: nexusModules.filter((module) => module.configured).length,
-    ready: nexusModules.filter((module) => module.status === "ready").length,
-    needsConfiguration: nexusModules.filter((module) => module.status === "needs-configuration").length,
-    disabled: nexusModules.filter((module) => module.status === "disabled").length,
+    total: modules.length,
+    mvpReady: modules.filter((module) => module.mvpPolicy === "mvp").length,
+    adapterOnly: modules.filter((module) => module.mvpPolicy === "adapter-only").length,
+    placeholder: modules.filter((module) => module.mvpPolicy === "placeholder").length,
+    deferred: modules.filter((module) => module.mvpPolicy === "deferred").length,
+    enabled: modules.filter((module) => module.enabled).length,
+    configured: modules.filter((module) => module.configured).length,
+    ready: modules.filter((module) => module.status === "ready").length,
+    needsConfiguration: modules.filter((module) => module.status === "needs-configuration").length,
+    disabled: modules.filter((module) => module.status === "disabled").length,
     blockedActions
   };
 }
