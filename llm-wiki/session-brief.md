@@ -218,3 +218,24 @@
 
 ## Next Work
 - Add dashboard controls/API for module enable-disable settings instead of only displaying detected readiness.
+
+## 2026-05-17 Module Enable-Disable Settings Brief
+
+## Latest Completed Work
+- Added `packages/core/src/nexus-module-settings.ts` with safe parsing, serialization, and enable-disable helpers.
+- Module readiness now accepts settings and marks user-disabled modules as `disabled` even when env readiness would otherwise be ready.
+- Added dashboard preview API `GET/POST /api/module-settings`.
+- Settings are stored under `.agent/module-settings.json` and contain only `disabledModuleIds`.
+- Dashboard module cards now show Enable/Disable buttons and reload `/api/modules` after a setting change.
+
+## Verification
+- RED confirmed for missing settings model/API/UI.
+- GREEN confirmed for targeted core/API/dashboard tests.
+- `npm.cmd run typecheck`: PASS
+- `npm.cmd test`: PASS, 18 files / 98 tests
+- `npm.cmd run build`: PASS
+- `npm.cmd run wiki:check`: PASS
+- `npm.cmd run preview:check`: PASS after browser launch approval, desktop/mobile consoleErrors=0
+
+## Next Work
+- Add CLI commands for module enable/disable or expand the dashboard settings panel with grouped filters if module count grows.

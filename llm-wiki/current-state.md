@@ -115,3 +115,10 @@
 - Added `AGENT_ROOM_BASE_URL` to safe config/env metadata.
 - CLI `modules` and dashboard `/api/modules` both use runtime env status calculation.
 - Verification: RED confirmed on injected env tests, then `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `npm.cmd run wiki:check`, and approved `npm.cmd run preview:check` all PASS.
+
+## 2026-05-17 Module Enable-Disable Settings Update
+- Added safe module settings model with `disabledModuleIds` only; secret-like strings are filtered.
+- Dashboard preview server now exposes `GET/POST /api/module-settings` and stores settings at `.agent/module-settings.json`.
+- `/api/modules` now applies saved module settings on top of env-derived readiness.
+- Dashboard module cards now include Enable/Disable controls and refresh module status after updates.
+- Verification: RED confirmed on missing settings model/API/UI tests, then `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `npm.cmd run wiki:check`, and approved `npm.cmd run preview:check` all PASS.

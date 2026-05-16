@@ -1,7 +1,14 @@
 import { execFileSync } from "node:child_process";
-import { createReadStream, existsSync, readFileSync } from "node:fs";
-import { createServer } from "node:http";
-import { extname, join, normalize, resolve } from "node:path";
+import { createReadStream, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { createServer, type IncomingMessage } from "node:http";
+import { dirname, extname, join, normalize, resolve } from "node:path";
+import {
+  createDefaultNexusModuleSettings,
+  parseNexusModuleSettingsJson,
+  setNexusModuleEnabled,
+  stringifyNexusModuleSettings,
+  type NexusModuleSettings
+} from "../../../packages/core/src/nexus-module-settings.js";
 import { getNexusModules, getNexusModuleSummary } from "../../../packages/core/src/nexus-modules.js";
 import {
   createSessionHandoffInputFromContext,
@@ -139,6 +146,45 @@ function readDefaultSessionContext(): Omit<SessionHandoffContextInput, "productN
   };
 }
 
+function readRequestBody(request: IncomingMessage): Promise<string> {
+  return new Promise((resolveBody, reject) => {
+    let body = "";
+    request.on("data", (chunk) => {
+      body += String(chunk);
+      if (body.length > 4096) {
+        reject(new Error("Request body is too large."));
+        request.destroy();
+      }
+    });
+    request.on("end", () => resolveBody(body));
+    request.on("error", reject);
+  });
+}
+
+export function readNexusModuleSettingsJson(settings: NexusModuleSettings = createDefaultNexusModuleSettings()): string {
+  return stringifyNexusModuleSettings(settings);
+}
+
+export function updateNexusModuleSettingsJson(settings: NexusModuleSettings, body: string): string {
+  const parsed = JSON.parse(body) as { moduleId?: unknown; enabled?: unknown };
+  if (typeof parsed.moduleId !== "string" || typeof parsed.enabled !== "boolean") {
+    throw new Error("moduleId and enabled are required.");
+  }
+
+  return stringifyNexusModuleSettings(setNexusModuleEnabled(settings, parsed.moduleId, parsed.enabled));
+}
+
+function readNexusModuleSettingsFile(settingsPath = resolve(".agent", "module-settings.json")): NexusModuleSettings {
+  return existsSync(settingsPath)
+    ? parseNexusModuleSettingsJson(readFileSync(settingsPath, "utf8"))
+    : createDefaultNexusModuleSettings();
+}
+
+function writeNexusModuleSettingsFile(settings: NexusModuleSettings, settingsPath = resolve(".agent", "module-settings.json")) {
+  mkdirSync(dirname(settingsPath), { recursive: true });
+  writeFileSync(settingsPath, stringifyNexusModuleSettings(settings), "utf8");
+}
+
 export function readMobileReadinessJson(env: Record<string, string | undefined> = process.env): string {
   return JSON.stringify({ connectors: getMobileConnectorReadiness(env) });
 }
@@ -152,10 +198,14 @@ export function readProviderReadinessJson(env: Record<string, string | undefined
   });
 }
 
-export function readNexusModulesJson(env: Record<string, string | undefined> = process.env): string {
+export function readNexusModulesJson(
+  env: Record<string, string | undefined> = process.env,
+  settings: NexusModuleSettings = readNexusModuleSettingsFile()
+): string {
   return JSON.stringify({
-    summary: getNexusModuleSummary({ env }),
-    modules: getNexusModules({ env })
+    summary: getNexusModuleSummary({ env, settings }),
+    settings,
+    modules: getNexusModules({ env, settings })
   });
 }
 
@@ -174,6 +224,33 @@ export function startPreviewServer(config = createPreviewServerConfig()): Return
     if (requestedUrl.pathname === "/api/modules") {
       response.writeHead(200, { "content-type": "application/json; charset=utf-8" });
       response.end(readNexusModulesJson());
+      return;
+    }
+
+    if (requestedUrl.pathname === "/api/module-settings") {
+      if (request.method === "GET") {
+        response.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+        response.end(readNexusModuleSettingsJson(readNexusModuleSettingsFile()));
+        return;
+      }
+
+      if (request.method === "POST") {
+        readRequestBody(request)
+          .then((body) => {
+            const updated = updateNexusModuleSettingsJson(readNexusModuleSettingsFile(), body);
+            writeNexusModuleSettingsFile(parseNexusModuleSettingsJson(updated));
+            response.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+            response.end(updated);
+          })
+          .catch((error: unknown) => {
+            response.writeHead(400, { "content-type": "application/json; charset=utf-8" });
+            response.end(JSON.stringify({ error: error instanceof Error ? error.message : "Invalid module settings." }));
+          });
+        return;
+      }
+
+      response.writeHead(405, { "content-type": "application/json; charset=utf-8" });
+      response.end(JSON.stringify({ error: "Method not allowed." }));
       return;
     }
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { setNexusModuleEnabled } from "./nexus-module-settings.js";
 import { getNexusModules, getNexusModuleSummary } from "./nexus-modules.js";
 
 describe("Nexus module registry", () => {
@@ -113,5 +114,30 @@ describe("Nexus module registry", () => {
     expect(JSON.stringify({ modules, summary })).not.toContain("sk-secret-value");
     expect(JSON.stringify({ modules, summary })).not.toContain("telegram-secret");
     expect(JSON.stringify({ modules, summary })).not.toContain("ghp-secret-value");
+  });
+
+  it("applies user module enable-disable settings over detected readiness", () => {
+    const settings = setNexusModuleEnabled({ disabledModuleIds: [] }, "providers", false);
+    const modules = getNexusModules({
+      env: {
+        OPENAI_API_KEY: "sk-secret-value"
+      },
+      settings
+    });
+    const summary = getNexusModuleSummary({
+      env: {
+        OPENAI_API_KEY: "sk-secret-value"
+      },
+      settings
+    });
+
+    expect(modules.find((module) => module.id === "providers")).toMatchObject({
+      enabled: false,
+      configured: false,
+      status: "disabled",
+      missingRequirements: ["disabled by user setting"]
+    });
+    expect(summary.disabled).toBeGreaterThanOrEqual(3);
+    expect(JSON.stringify({ modules, summary })).not.toContain("sk-secret-value");
   });
 });

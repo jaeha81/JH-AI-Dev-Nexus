@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   createPreviewServerConfig,
   getContentType,
+  readNexusModuleSettingsJson,
   readNexusModulesJson,
   readMobileReadinessJson,
   readSessionHandoffJson,
   readProviderReadinessJson,
   readRecentValidationResults,
+  updateNexusModuleSettingsJson,
   resolvePreviewArtifact,
   resolvePreviewAsset
 } from "./preview-server.js";
@@ -198,6 +200,38 @@ describe("web dashboard preview server", () => {
     expect(json).not.toContain("sk-secret-value");
     expect(json).not.toContain("telegram-secret");
     expect(json).not.toContain("ghp-secret-value");
+  });
+
+  it("builds module settings JSON and applies disabled modules to module readiness", () => {
+    const settingsJson = readNexusModuleSettingsJson({ disabledModuleIds: ["providers"] });
+    const modulesJson = readNexusModulesJson(
+      {
+        OPENAI_API_KEY: "sk-secret-value"
+      },
+      JSON.parse(settingsJson)
+    );
+    const payload = JSON.parse(modulesJson);
+
+    expect(JSON.parse(settingsJson)).toEqual({ disabledModuleIds: ["providers"] });
+    expect(payload.modules.find((module: { id: string }) => module.id === "providers")).toMatchObject({
+      enabled: false,
+      configured: false,
+      status: "disabled",
+      missingRequirements: ["disabled by user setting"]
+    });
+    expect(modulesJson).not.toContain("sk-secret-value");
+  });
+
+  it("updates module settings JSON from a safe enable-disable request", () => {
+    const updated = updateNexusModuleSettingsJson(
+      { disabledModuleIds: [] },
+      JSON.stringify({ moduleId: "providers", enabled: false })
+    );
+    const restored = updateNexusModuleSettingsJson(JSON.parse(updated), JSON.stringify({ moduleId: "providers", enabled: true }));
+
+    expect(JSON.parse(updated)).toEqual({ disabledModuleIds: ["providers"] });
+    expect(JSON.parse(restored)).toEqual({ disabledModuleIds: [] });
+    expect(updated).not.toContain("sk-secret-value");
   });
 
   it("builds session handoff JSON for dashboard commands without exposing secrets", () => {

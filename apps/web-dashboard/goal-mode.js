@@ -203,6 +203,15 @@ function renderNexusModules(payload) {
 
     article.appendChild(renderModuleOperationalState(module));
 
+    const toggle = document.createElement("button");
+    toggle.className = "module-toggle";
+    toggle.type = "button";
+    toggle.dataset.moduleId = module.id;
+    toggle.dataset.enabled = String(!module.enabled);
+    toggle.textContent = module.enabled ? "Disable" : "Enable";
+    toggle.addEventListener("click", () => toggleModuleEnabled(module.id, !module.enabled));
+    article.appendChild(toggle);
+
     list.appendChild(article);
   });
 
@@ -228,6 +237,23 @@ async function loadNexusModules() {
     renderNexusModules(payload);
   } catch (error) {
     renderStaticNexusModuleFallback();
+  }
+}
+
+async function toggleModuleEnabled(moduleId, enabled) {
+  try {
+    const response = await fetch("/api/module-settings", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({ moduleId, enabled })
+    });
+    if (!response.ok) throw new Error(`Module settings request failed: ${response.status}`);
+    await response.json();
+    await loadNexusModules();
+  } catch (error) {
+    $("moduleSummary").textContent = error instanceof Error ? error.message : "Module settings unavailable.";
   }
 }
 

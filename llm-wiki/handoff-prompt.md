@@ -156,3 +156,13 @@
 - Added safe config metadata for `AGENT_ROOM_BASE_URL`.
 - Verification complete: RED injected-env tests failed first, then `typecheck`, full `test`, `build`, `wiki:check`, and approved `preview:check` passed.
 - Next recommended work: add module enable-disable settings storage and dashboard/API controls.
+
+## 2026-05-17 Module Enable-Disable Settings Handoff
+- Completed module enable-disable settings storage and dashboard/API controls.
+- Core settings model: `packages/core/src/nexus-module-settings.ts`.
+- Storage: `.agent/module-settings.json`, containing only `{ disabledModuleIds: string[] }`.
+- API: `GET /api/module-settings` returns settings; `POST /api/module-settings` accepts `{ moduleId, enabled }`.
+- Dashboard: each module card now has an Enable/Disable button that updates settings and reloads `/api/modules`.
+- Safety: settings parser filters duplicate ids and secret-like strings; disabled modules override env-derived readiness with `status=disabled`.
+- Verification complete: RED targeted tests failed first, then `typecheck`, full `test`, `build`, `wiki:check`, and approved `preview:check` passed.
+- Next recommended work: add CLI wrappers for module enable/disable or improve dashboard module grouping/filtering.

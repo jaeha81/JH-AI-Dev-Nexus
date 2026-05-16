@@ -1,4 +1,9 @@
 import { createDefaultConfig } from "./config.js";
+import {
+  createDefaultNexusModuleSettings,
+  isNexusModuleEnabled,
+  type NexusModuleSettings
+} from "./nexus-module-settings.js";
 
 export type NexusModulePolicy = "mvp" | "adapter-only" | "placeholder" | "deferred";
 export type NexusModuleStatus = "ready" | "needs-configuration" | "disabled";
@@ -35,6 +40,7 @@ export type NexusModule = {
 
 export type NexusModuleRuntimeOptions = {
   env?: Record<string, string | undefined>;
+  settings?: NexusModuleSettings;
 };
 
 const sharedBlockedActions = [
@@ -261,9 +267,23 @@ function hasSetting(env: Record<string, string | undefined>, name: string): bool
   return Boolean(env[name]?.trim());
 }
 
-function withRuntimeStatus(module: NexusModule, env: Record<string, string | undefined>): NexusModule {
+function withRuntimeStatus(
+  module: NexusModule,
+  env: Record<string, string | undefined>,
+  settings: NexusModuleSettings
+): NexusModule {
   const { secrets } = createDefaultConfig();
   const cloned = { ...module, missingRequirements: [...module.missingRequirements] };
+
+  if (!isNexusModuleEnabled(settings, cloned.id)) {
+    return {
+      ...cloned,
+      enabled: false,
+      configured: false,
+      missingRequirements: ["disabled by user setting"],
+      status: "disabled"
+    };
+  }
 
   if (!cloned.enabled || cloned.status === "disabled") return cloned;
 
@@ -327,7 +347,9 @@ function withRuntimeStatus(module: NexusModule, env: Record<string, string | und
 }
 
 export function getNexusModules(options: NexusModuleRuntimeOptions = {}): readonly NexusModule[] {
-  return nexusModules.map((module) => withRuntimeStatus(module, options.env ?? {}));
+  return nexusModules.map((module) =>
+    withRuntimeStatus(module, options.env ?? {}, options.settings ?? createDefaultNexusModuleSettings())
+  );
 }
 
 export function getNexusModuleSummary(options: NexusModuleRuntimeOptions = {}) {

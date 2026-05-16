@@ -19,6 +19,9 @@ describe("JH Goal Mode dashboard UI", () => {
     expect(script).toContain("renderNexusModules");
     expect(script).toContain("renderStaticNexusModuleFallback");
     expect(script).toContain("renderModuleOperationalState");
+    expect(script).toContain("/api/module-settings");
+    expect(script).toContain("toggleModuleEnabled");
+    expect(script).toContain("module-toggle");
     expect(script).toContain("status-console");
     expect(script).toContain("missingRequirements");
     expect(script).toContain("content-type");
