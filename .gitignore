@@ -6,3 +6,4 @@ dist/
 npm-debug.log*
 .preview-dashboard.*.log
 output/playwright/
+.agent/
