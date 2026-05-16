@@ -139,3 +139,23 @@
 
 ## Next Work
 - Improve Session Handoff panel presentation so long generated prompts are summarized first and full text remains copyable without dominating the dashboard column.
+
+## 2026-05-16 Nexus Module Registry CLI/API Brief
+
+## Latest Completed Work
+- Exposed the Nexus module registry through the CLI command `modules`.
+- Added dashboard API JSON through `/api/modules`.
+- Changed the dashboard module section to load module data from `/api/modules`.
+- Added a dashboard fallback for stale preview servers that return HTML instead of module JSON, preserving visible static cards without showing a JSON parse error.
+
+## Verification
+- RED confirmed for missing CLI `modules`, missing `readNexusModulesJson`, and missing `/api/modules` dashboard loading.
+- GREEN confirmed for targeted CLI/API/dashboard tests.
+- `npm.cmd run typecheck`: PASS
+- `npm.cmd test`: PASS, 17 files / 88 tests
+- `npm.cmd run build`: PASS
+- `npm.cmd run wiki:check`: PASS
+- `npm.cmd run preview:check`: PASS, desktop/mobile consoleErrors=0
+
+## Note
+- A stale server was already listening on `127.0.0.1:3100` and returned HTML for `/api/modules`; the dashboard fallback now prevents visible UI breakage, while the updated preview server code exposes the JSON endpoint after restart.

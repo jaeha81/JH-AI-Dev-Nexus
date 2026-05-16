@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createPreviewServerConfig,
   getContentType,
+  readNexusModulesJson,
   readMobileReadinessJson,
   readSessionHandoffJson,
   readProviderReadinessJson,
@@ -147,6 +148,20 @@ describe("web dashboard preview server", () => {
       ]
     });
     expect(json).not.toContain("sk-secret-value");
+  });
+
+  it("builds Nexus module registry JSON for the dashboard without exposing secrets", () => {
+    const json = readNexusModulesJson();
+    const payload = JSON.parse(json);
+
+    expect(payload.summary.total).toBe(14);
+    expect(payload.summary.mvpReady).toBeGreaterThan(0);
+    expect(payload.modules.map((module: { id: string }) => module.id)).toContain("goal-mode");
+    expect(payload.modules.find((module: { id: string }) => module.id === "agent-room").role).toBe(
+      "collaboration-module"
+    );
+    expect(json).not.toContain("sk-secret-value");
+    expect(json).not.toContain("token=");
   });
 
   it("builds session handoff JSON for dashboard commands without exposing secrets", () => {

@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { createDefaultConfig } from "../../../packages/core/src/config.js";
 import { createGoalModeStatus, generateGoalModePackage, validateGoalInput } from "../../../packages/core/src/goal-mode.js";
 import { getHarnessMenu } from "../../../packages/core/src/menu.js";
+import { getNexusModules, getNexusModuleSummary } from "../../../packages/core/src/nexus-modules.js";
 import { checkWikiDocuments, getRequiredWikiDocuments } from "../../../packages/core/src/wiki.js";
 import {
   createSessionHandoffInputFromContext,
@@ -89,6 +90,29 @@ export function runCommand(args: string[], dependencies: CommandDependencies = {
     return {
       exitCode: 0,
       stdout: getHarnessMenu().map((item) => item.id).join("\n"),
+      stderr: ""
+    };
+  }
+
+  if (command === "modules") {
+    const summary = getNexusModuleSummary();
+    return {
+      exitCode: 0,
+      stdout: [
+        `total=${summary.total}`,
+        `mvpReady=${summary.mvpReady}`,
+        `adapterOnly=${summary.adapterOnly}`,
+        `placeholder=${summary.placeholder}`,
+        `deferred=${summary.deferred}`,
+        ...getNexusModules().map((module) =>
+          [
+            `module=${module.id}`,
+            `policy=${module.mvpPolicy}`,
+            `role=${module.role}`,
+            `label=${module.label}`
+          ].join(" ")
+        )
+      ].join("\n"),
       stderr: ""
     };
   }

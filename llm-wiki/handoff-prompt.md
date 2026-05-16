@@ -122,3 +122,11 @@
 - Safety: `.env` changed paths are filtered, obvious `sk-*` and `token=` values are redacted, and validation commands are capped to recent entries.
 - Verification complete: `typecheck`, `test`, `build`, `wiki:check`, and `preview:check` passed.
 - Next recommended work: improve the dashboard Session Handoff panel UX so long prompts are collapsed or summarized while preserving copy support.
+
+## 2026-05-16 Nexus Module Registry CLI/API Handoff
+- Completed the requested module registry exposure work.
+- CLI command: `node dist/apps/cli/src/index.js modules`.
+- Dashboard API: `GET /api/modules`, served by `readNexusModulesJson()` in the preview server.
+- Dashboard behavior: module cards now fetch `/api/modules` and render registry data; stale server HTML fallback is handled without user-visible JSON parse errors.
+- Verification complete: `typecheck`, `test`, `build`, `wiki:check`, and `preview:check` passed; desktop/mobile screenshots show `14 modules / MVP 7`.
+- Next recommended work: restart the Dev Nexus preview server on port 3100 so the live `/api/modules` route is served by the updated compiled server instead of the stale fallback process.

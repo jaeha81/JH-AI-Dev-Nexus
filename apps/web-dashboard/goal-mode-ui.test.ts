@@ -14,10 +14,12 @@ describe("JH Goal Mode dashboard UI", () => {
     expect(html).toContain("Session Handoff");
     expect(html).toContain("IDE Adapters");
     expect(html).toContain("tmux 2x2");
-    expect(script).toContain("nexusModules");
+    expect(script).toContain("/api/modules");
+    expect(script).toContain("loadNexusModules");
     expect(script).toContain("renderNexusModules");
-    expect(script).toContain("adapter-only");
-    expect(script).toContain("collaboration-module");
+    expect(script).toContain("renderStaticNexusModuleFallback");
+    expect(script).toContain("content-type");
+    expect(script).not.toContain("const nexusModules = [");
   });
 
   it("exposes task input, generated prompt outputs, copy buttons, and history areas", () => {
@@ -77,6 +79,7 @@ describe("JH Goal Mode dashboard UI", () => {
     expect(script).toContain("taskPlaceholder");
     expect(script).toContain("navigator.clipboard.writeText");
     expect(script).toContain("copyText");
+    expect(script).toContain("/api/modules");
     expect(script).toContain("/api/preview-validation");
     expect(script).toContain("/api/mobile-readiness");
     expect(script).toContain("/api/provider-readiness");

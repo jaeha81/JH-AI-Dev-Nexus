@@ -89,3 +89,9 @@
 - CLI `session:handoff` and dashboard `/api/session-handoff` now build handoff plans from current session context instead of fixed placeholder lists.
 - The collector filters `.env` paths from changed-file summaries, redacts obvious secret/token patterns, and limits validation command output to recent entries.
 - Verification: `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `npm.cmd run wiki:check`, `npm.cmd run preview:check` all PASS.
+
+## 2026-05-16 Nexus Module Registry CLI/API Update
+- CLI now exposes the Nexus module registry through `modules`, including summary counts and module id/policy/role lines.
+- Dashboard preview server now exposes `/api/modules` with `{ summary, modules }` JSON from `packages/core/src/nexus-modules.ts`.
+- Dashboard module cards now load from `/api/modules`; if a stale preview server returns HTML for that route, the UI falls back to existing static cards and computes the visible summary.
+- Verification: `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `npm.cmd run wiki:check`, and `npm.cmd run preview:check` all PASS; screenshots show `14 modules / MVP 7` with no visible JSON parse error.

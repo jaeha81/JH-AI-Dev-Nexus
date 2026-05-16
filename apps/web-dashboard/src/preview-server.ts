@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { createReadStream, existsSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
+import { getNexusModules, getNexusModuleSummary } from "../../../packages/core/src/nexus-modules.js";
 import {
   createSessionHandoffInputFromContext,
   createSessionHandoffPlan,
@@ -151,6 +152,13 @@ export function readProviderReadinessJson(env: Record<string, string | undefined
   });
 }
 
+export function readNexusModulesJson(): string {
+  return JSON.stringify({
+    summary: getNexusModuleSummary(),
+    modules: getNexusModules()
+  });
+}
+
 export function readSessionHandoffJson(context = readDefaultSessionContext()): string {
   return JSON.stringify(
     createSessionHandoffPlan(createSessionHandoffInputFromContext({
@@ -163,6 +171,12 @@ export function readSessionHandoffJson(context = readDefaultSessionContext()): s
 export function startPreviewServer(config = createPreviewServerConfig()): ReturnType<typeof createServer> {
   const server = createServer((request, response) => {
     const requestedUrl = new URL(request.url ?? "/", `http://${config.host}:${config.port}`);
+    if (requestedUrl.pathname === "/api/modules") {
+      response.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+      response.end(readNexusModulesJson());
+      return;
+    }
+
     if (requestedUrl.pathname === "/api/provider-readiness") {
       response.writeHead(200, { "content-type": "application/json; charset=utf-8" });
       response.end(readProviderReadinessJson());

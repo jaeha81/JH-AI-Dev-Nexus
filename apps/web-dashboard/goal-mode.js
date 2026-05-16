@@ -4,23 +4,6 @@ const languageStorageKey = "jh-goal-mode-language";
 
 const $ = (id) => document.getElementById(id);
 
-const nexusModules = [
-  { id: "goal-mode", label: "Goal Mode", policy: "mvp", role: "orchestration-core" },
-  { id: "session-handoff", label: "Session Handoff", policy: "mvp", role: "memory-module" },
-  { id: "llm-wiki", label: "LLM Wiki", policy: "mvp", role: "memory-module" },
-  { id: "providers", label: "Anthropic / GPT Providers", policy: "mvp", role: "provider-module" },
-  { id: "telegram-mobile", label: "Telegram / Mobile", policy: "mvp", role: "mobile-module" },
-  { id: "github", label: "GitHub Line", policy: "adapter-only", role: "source-control-module" },
-  { id: "obsidian", label: "Obsidian", policy: "adapter-only", role: "knowledge-module" },
-  { id: "preview-check", label: "Development Preview", policy: "mvp", role: "verification-module" },
-  { id: "plugin-system", label: "Plugin System", policy: "placeholder", role: "extension-module" },
-  { id: "skill-registry", label: "Skill Registry", policy: "placeholder", role: "extension-module" },
-  { id: "ide-adapters", label: "IDE Adapters", policy: "adapter-only", role: "ide-module" },
-  { id: "tmux-grid", label: "tmux 2x2", policy: "adapter-only", role: "terminal-module" },
-  { id: "templates", label: "Design / User / Developer Templates", policy: "mvp", role: "template-module" },
-  { id: "agent-room", label: "Agent Room", policy: "adapter-only", role: "collaboration-module" }
-];
-
 const translations = {
   ko: {
     goalModeActive: "Goal Mode 활성화",
@@ -175,15 +158,54 @@ function applyLanguage(language) {
   $("task").placeholder = translations[normalized].taskPlaceholder;
 }
 
-function renderNexusModules() {
-  const summary = nexusModules.reduce(
-    (acc, module) => {
-      acc[module.policy] = (acc[module.policy] || 0) + 1;
-      return acc;
-    },
-    {}
-  );
-  $("moduleSummary").textContent = `${nexusModules.length} modules / MVP ${summary.mvp || 0}`;
+function renderNexusModules(payload) {
+  const modules = payload.modules || [];
+  const summary = payload.summary || {};
+  const list = $("nexusModules");
+  list.replaceChildren();
+
+  modules.forEach((module) => {
+    const article = document.createElement("article");
+    article.dataset.moduleId = module.id;
+
+    const title = document.createElement("strong");
+    title.textContent = module.label;
+    article.appendChild(title);
+
+    const detail = document.createElement("span");
+    detail.textContent = module.outputs?.[0] || module.role;
+    article.appendChild(detail);
+
+    const policy = document.createElement("small");
+    policy.textContent = module.mvpPolicy;
+    article.appendChild(policy);
+
+    list.appendChild(article);
+  });
+
+  $("moduleSummary").textContent = `${summary.total || modules.length} modules / MVP ${summary.mvpReady || 0}`;
+}
+
+function renderStaticNexusModuleFallback() {
+  const cards = Array.from($("nexusModules").querySelectorAll("article"));
+  const mvpReady = cards.filter((card) => card.querySelector("small")?.textContent === "mvp").length;
+  $("moduleSummary").textContent = `${cards.length} modules / MVP ${mvpReady}`;
+}
+
+async function loadNexusModules() {
+  try {
+    const response = await fetch("/api/modules");
+    if (!response.ok) throw new Error(`Module registry request failed: ${response.status}`);
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      renderStaticNexusModuleFallback();
+      return;
+    }
+    const payload = await response.json();
+    renderNexusModules(payload);
+  } catch (error) {
+    renderStaticNexusModuleFallback();
+  }
 }
 
 function classifyTask(task) {
@@ -558,7 +580,7 @@ document.querySelectorAll("[data-copy-text]").forEach((button) => {
 });
 
 applyLanguage(currentLanguage());
-renderNexusModules();
+loadNexusModules();
 renderHistory();
 loadRecentValidation();
 loadMobileReadiness();

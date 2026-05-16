@@ -23,6 +23,18 @@ describe("CLI commands", () => {
     expect(result.stdout).toContain("tmux-2x2");
   });
 
+  it("returns Nexus module registry summary without exposing secrets", () => {
+    const result = runCommand(["modules"]);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("total=14");
+    expect(result.stdout).toContain("mvpReady=");
+    expect(result.stdout).toContain("module=goal-mode policy=mvp role=orchestration-core");
+    expect(result.stdout).toContain("module=agent-room policy=adapter-only role=collaboration-module");
+    expect(result.stdout).not.toContain("sk-");
+    expect(result.stdout).not.toContain("token=");
+  });
+
   it("returns registered mobile connectors", () => {
     const result = runCommand(["mobile"]);
 
