@@ -802,3 +802,20 @@ notify=discord status=skipped reason=Missing required secrets.
   - desktop:console:clean
   - mobile:screenshot:captured
   - mobile:console:clean
+
+## 2026-05-16T14:56:58.680Z Preview Check 자동 기록
+- 명령: `npm run preview:check`
+- 결과: PASS.
+- 상세:
+  - viewport=desktop
+  - screenshot=output/playwright/goal-mode-desktop.png
+  - consoleErrors=0
+  - viewport=mobile
+  - screenshot=output/playwright/goal-mode-mobile.png
+  - consoleErrors=0
+- 통합 검사:
+  - url:local
+  - desktop:screenshot:captured
+  - desktop:console:clean
+  - mobile:screenshot:captured
+  - mobile:console:clean
