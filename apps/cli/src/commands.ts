@@ -1,8 +1,16 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { createDefaultConfig } from "../../../packages/core/src/config.js";
 import { createGoalModeStatus, generateGoalModePackage, validateGoalInput } from "../../../packages/core/src/goal-mode.js";
 import { getHarnessMenu } from "../../../packages/core/src/menu.js";
+import {
+  createDefaultNexusModuleSettings,
+  parseNexusModuleSettingsJson,
+  setNexusModuleEnabled,
+  stringifyNexusModuleSettings,
+  type NexusModuleSettings
+} from "../../../packages/core/src/nexus-module-settings.js";
 import { getNexusModules, getNexusModuleSummary } from "../../../packages/core/src/nexus-modules.js";
 import { checkWikiDocuments, getRequiredWikiDocuments } from "../../../packages/core/src/wiki.js";
 import {
@@ -37,6 +45,8 @@ export type CommandResult = {
 
 export type CommandDependencies = {
   env?: Record<string, string | undefined>;
+  moduleSettings?: NexusModuleSettings;
+  writeModuleSettings?: (settings: NexusModuleSettings) => void;
   sessionContext?: Omit<SessionHandoffContextInput, "productName">;
 };
 
@@ -60,6 +70,17 @@ function readDefaultSessionContext(): Omit<SessionHandoffContextInput, "productN
     validationLogText: readTextIfExists("llm-wiki/validation-log.md"),
     gitStatusText: readGitStatusText()
   };
+}
+
+function readDefaultModuleSettings(settingsPath = resolve(".agent", "module-settings.json")): NexusModuleSettings {
+  return existsSync(settingsPath)
+    ? parseNexusModuleSettingsJson(readFileSync(settingsPath, "utf8"))
+    : createDefaultNexusModuleSettings();
+}
+
+function writeDefaultModuleSettings(settings: NexusModuleSettings, settingsPath = resolve(".agent", "module-settings.json")) {
+  mkdirSync(dirname(settingsPath), { recursive: true });
+  writeFileSync(settingsPath, stringifyNexusModuleSettings(settings), "utf8");
 }
 
 export function runCommand(args: string[], dependencies: CommandDependencies = {}): CommandResult {
@@ -96,7 +117,8 @@ export function runCommand(args: string[], dependencies: CommandDependencies = {
 
   if (command === "modules") {
     const env = dependencies.env ?? process.env;
-    const summary = getNexusModuleSummary({ env });
+    const settings = dependencies.moduleSettings ?? readDefaultModuleSettings();
+    const summary = getNexusModuleSummary({ env, settings });
     return {
       exitCode: 0,
       stdout: [
@@ -110,7 +132,7 @@ export function runCommand(args: string[], dependencies: CommandDependencies = {
         `ready=${summary.ready}`,
         `needsConfiguration=${summary.needsConfiguration}`,
         `disabled=${summary.disabled}`,
-        ...getNexusModules({ env }).map((module) =>
+        ...getNexusModules({ env, settings }).map((module) =>
           [
             `module=${module.id}`,
             `status=${module.status}`,
@@ -123,6 +145,41 @@ export function runCommand(args: string[], dependencies: CommandDependencies = {
           ].join(" ")
         )
       ].join("\n"),
+      stderr: ""
+    };
+  }
+
+  if (command === "module:enable" || command === "module:disable") {
+    const [moduleId] = rest;
+    const env = dependencies.env ?? process.env;
+    const settings = dependencies.moduleSettings ?? readDefaultModuleSettings();
+    const existingModule = getNexusModules({ env, settings }).find((module) => module.id === moduleId);
+
+    if (!moduleId) {
+      return {
+        exitCode: 1,
+        stdout: "",
+        stderr: "Module id is required."
+      };
+    }
+
+    if (!existingModule) {
+      return {
+        exitCode: 1,
+        stdout: "",
+        stderr: `Unknown module: ${moduleId}.`
+      };
+    }
+
+    const enabled = command === "module:enable";
+    const updatedSettings = setNexusModuleEnabled(settings, moduleId, enabled);
+    const writeSettings = dependencies.writeModuleSettings ?? writeDefaultModuleSettings;
+    writeSettings(updatedSettings);
+    const disabledModuleIds = updatedSettings.disabledModuleIds.length ? updatedSettings.disabledModuleIds.join(",") : "none";
+
+    return {
+      exitCode: 0,
+      stdout: [`module=${moduleId}`, `enabled=${enabled}`, `disabledModuleIds=${disabledModuleIds}`].join("\n"),
       stderr: ""
     };
   }

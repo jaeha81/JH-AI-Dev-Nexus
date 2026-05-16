@@ -870,3 +870,16 @@ notify=discord status=skipped reason=Missing required secrets.
   - desktop:console:clean
   - mobile:screenshot:captured
   - mobile:console:clean
+
+## 2026-05-17 Module Enable-Disable CLI Verification
+- command: `npm.cmd test -- apps/cli/src/commands.test.ts`
+- result: PASS, 24 tests
+- command: `npm.cmd run typecheck`
+- result: PASS
+- command: `npm.cmd test`
+- result: PASS, 18 files / 101 tests
+- command: `npm.cmd run build`
+- result: PASS
+- command: `npm.cmd run wiki:check`
+- result: PASS
+- note: preview check was not rerun because this change only touches CLI command behavior and tests.

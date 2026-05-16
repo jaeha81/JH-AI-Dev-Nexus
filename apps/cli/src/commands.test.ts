@@ -61,6 +61,59 @@ describe("CLI commands", () => {
     expect(result.stdout).not.toContain("ghp-secret-value");
   });
 
+  it("applies injected module settings when listing modules", () => {
+    const result = runCommand(["modules"], {
+      env: {
+        OPENAI_API_KEY: "sk-secret-value"
+      },
+      moduleSettings: {
+        disabledModuleIds: ["providers"]
+      }
+    });
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("module=providers status=disabled enabled=false configured=false");
+    expect(result.stdout).toContain("disabled=3");
+    expect(result.stdout).not.toContain("sk-secret-value");
+  });
+
+  it("disables and enables a Nexus module through CLI settings wrappers", () => {
+    const writtenSettings: unknown[] = [];
+
+    const disabled = runCommand(["module:disable", "providers"], {
+      moduleSettings: { disabledModuleIds: [] },
+      writeModuleSettings: (settings) => writtenSettings.push(settings)
+    });
+    const enabled = runCommand(["module:enable", "providers"], {
+      moduleSettings: { disabledModuleIds: ["providers"] },
+      writeModuleSettings: (settings) => writtenSettings.push(settings)
+    });
+
+    expect(disabled.exitCode).toBe(0);
+    expect(disabled.stdout).toContain("module=providers");
+    expect(disabled.stdout).toContain("enabled=false");
+    expect(disabled.stdout).toContain("disabledModuleIds=providers");
+    expect(enabled.exitCode).toBe(0);
+    expect(enabled.stdout).toContain("module=providers");
+    expect(enabled.stdout).toContain("enabled=true");
+    expect(enabled.stdout).toContain("disabledModuleIds=none");
+    expect(writtenSettings).toEqual([{ disabledModuleIds: ["providers"] }, { disabledModuleIds: [] }]);
+  });
+
+  it("rejects unknown module setting updates without writing", () => {
+    let writeCount = 0;
+    const result = runCommand(["module:disable", "unknown"], {
+      moduleSettings: { disabledModuleIds: [] },
+      writeModuleSettings: () => {
+        writeCount += 1;
+      }
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain("Unknown module: unknown.");
+    expect(writeCount).toBe(0);
+  });
+
   it("returns registered mobile connectors", () => {
     const result = runCommand(["mobile"]);
 

@@ -166,3 +166,12 @@
 - Safety: settings parser filters duplicate ids and secret-like strings; disabled modules override env-derived readiness with `status=disabled`.
 - Verification complete: RED targeted tests failed first, then `typecheck`, full `test`, `build`, `wiki:check`, and approved `preview:check` passed.
 - Next recommended work: add CLI wrappers for module enable/disable or improve dashboard module grouping/filtering.
+
+## 2026-05-17 Module Enable-Disable CLI Handoff
+- Completed CLI wrappers for module enable/disable.
+- Commands: `node dist/apps/cli/src/index.js module:disable <moduleId>` and `node dist/apps/cli/src/index.js module:enable <moduleId>`.
+- CLI `modules` now reads `.agent/module-settings.json` and applies disabled module settings to summary/status output.
+- Unknown module ids are rejected before settings are written.
+- Changed files: `apps/cli/src/commands.ts`, `apps/cli/src/commands.test.ts`.
+- Verification complete: RED targeted CLI tests failed first, then `npm.cmd run typecheck`, `npm.cmd test -- apps/cli/src/commands.test.ts`, `npm.cmd test`, `npm.cmd run build`, and `npm.cmd run wiki:check` passed.
+- Next recommended work: create PR/merge for `codex-module-status-console`, or add dashboard grouping/filtering if module count grows.

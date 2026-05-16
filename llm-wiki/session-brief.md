@@ -239,3 +239,22 @@
 
 ## Next Work
 - Add CLI commands for module enable/disable or expand the dashboard settings panel with grouped filters if module count grows.
+
+## 2026-05-17 Module Enable-Disable CLI Brief
+
+## Latest Completed Work
+- Added CLI wrappers `module:disable <moduleId>` and `module:enable <moduleId>`.
+- CLI module listing now reads `.agent/module-settings.json` and applies saved disabled module settings to status output.
+- CLI setting updates validate module ids against the Nexus module registry before writing.
+- Tests use injected module settings/write dependencies so CLI behavior is covered without touching the real `.agent/module-settings.json`.
+
+## Verification
+- RED confirmed for missing CLI settings application and missing enable-disable wrappers.
+- `npm.cmd run typecheck`: PASS
+- `npm.cmd test -- apps/cli/src/commands.test.ts`: PASS, 24 tests
+- `npm.cmd test`: PASS, 18 files / 101 tests
+- `npm.cmd run build`: PASS
+- `npm.cmd run wiki:check`: PASS
+
+## Next Work
+- Create PR/merge for `codex-module-status-console`, or add dashboard grouping/filtering if module count grows.

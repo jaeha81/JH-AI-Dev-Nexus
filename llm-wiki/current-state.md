@@ -122,3 +122,10 @@
 - `/api/modules` now applies saved module settings on top of env-derived readiness.
 - Dashboard module cards now include Enable/Disable controls and refresh module status after updates.
 - Verification: RED confirmed on missing settings model/API/UI tests, then `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `npm.cmd run wiki:check`, and approved `npm.cmd run preview:check` all PASS.
+
+## 2026-05-17 Module Enable-Disable CLI Update
+- CLI `modules` now applies saved `.agent/module-settings.json` settings so command-line status matches dashboard/API module state.
+- Added `module:disable <moduleId>` and `module:enable <moduleId>` CLI commands.
+- CLI updates reject unknown module ids before writing settings.
+- Test injection covers settings read/write behavior without mutating the real local settings file.
+- Verification: RED confirmed on new CLI expectations, then `npm.cmd run typecheck`, `npm.cmd test -- apps/cli/src/commands.test.ts`, `npm.cmd test`, `npm.cmd run build`, and `npm.cmd run wiki:check` all PASS.
