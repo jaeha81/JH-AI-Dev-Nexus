@@ -23,6 +23,46 @@ Goal Mode and Plan Mode may need more context than normal work, but they are not
 - In both modes, start narrow and expand step by step.
 - If a mode forces additional context reading, state briefly why it is needed and what range will be read.
 
+## Goal Mode Context Compression Handoff
+
+If Goal Mode work is likely to hit context compression or session compaction, Codex must not silently continue as if nothing changed.
+
+Required flow:
+
+1. Notify the user that context compression is likely or has become necessary.
+2. Stop taking new implementation scope unless the user explicitly asks to continue in the current session.
+3. Summarize the current work state: completed changes, remaining work, verification results, dirty files, stale server or local-only risks.
+4. Update the LLM Wiki handoff layer with concise facts only:
+   - `llm-wiki/session-brief.md`
+   - `llm-wiki/current-state.md`
+   - `llm-wiki/handoff-prompt.md`
+   - `llm-wiki/validation-log.md` when new verification was run
+5. Use Obsidian session saving only in these cases:
+   - final development work is complete and the result is worth preserving as a session record
+   - the user identifies the state as an important save point
+   - the user explicitly asks for `세션 종료`, `종료 저장`, `오늘 세션 저장`, or equivalent session-end saving
+6. For normal context compression handoff, update LLM Wiki and provide the next-session prompt; do not run Obsidian saving unless one of the above conditions applies.
+7. Give the user a ready-to-paste next-session command prompt that includes:
+   - repository path
+   - current goal
+   - files to read first, using tail/search guidance for large wiki files
+   - remaining tasks
+   - exact verification commands already run and still required
+   - warning to preserve uncommitted changes
+
+Template for the next-session prompt:
+
+```text
+D:\ai프로젝트(코덱스)\JH-AI Dev Nexus 에서 Goal Mode로 계속 개발.
+현재 목표: <goal>.
+먼저 AGENTS.md와 codex-knowledge/context-management.md의 관련 섹션을 확인.
+그 다음 llm-wiki/session-brief.md, llm-wiki/handoff-prompt.md, llm-wiki/current-state.md는 전체 읽기 대신 tail/search로 최신 섹션만 확인.
+git status로 미커밋 변경을 먼저 확인하고 기존 변경을 보존.
+남은 작업: <remaining work>.
+검증 기준: <commands>.
+TDD가 필요한 변경은 실패 테스트 -> RED 확인 -> 구현 -> GREEN -> 전체 검증 순서로 진행.
+```
+
 ## Obsidian And LLM Wiki
 
 Obsidian and LLM Wiki are context compression and session continuity layers.
