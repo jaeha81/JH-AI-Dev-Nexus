@@ -113,3 +113,12 @@
   - dashboard Session Handoff panel with copy command and next-session prompt copy control
 - The module exposes safe command plans only. It does not automatically execute Obsidian writes, commits, pushes, deploys, or secret reads.
 - Next recommended work after verification: connect Session Handoff to richer current-session collection from validation logs and changed-file summaries.
+
+## 2026-05-16 Session Handoff Context Collection Handoff
+- Completed the next recommended work: Session Handoff now collects from LLM Wiki context, validation log text, and `git status --short` changed-file summaries.
+- Core function: `createSessionHandoffInputFromContext`.
+- CLI: `session:handoff` now uses current local context by default, with test injection support.
+- Dashboard API: `/api/session-handoff` now uses the same collector and includes current changed-file summary counts.
+- Safety: `.env` changed paths are filtered, obvious `sk-*` and `token=` values are redacted, and validation commands are capped to recent entries.
+- Verification complete: `typecheck`, `test`, `build`, `wiki:check`, and `preview:check` passed.
+- Next recommended work: improve the dashboard Session Handoff panel UX so long prompts are collapsed or summarized while preserving copy support.

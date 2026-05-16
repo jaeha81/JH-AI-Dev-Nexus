@@ -14,6 +14,15 @@ export type SessionHandoffPlan = {
   nextSessionPrompt: string;
 };
 
+export type SessionHandoffContextInput = {
+  productName: string;
+  sessionBriefText?: string;
+  currentStateText?: string;
+  handoffText?: string;
+  validationLogText?: string;
+  gitStatusText?: string;
+};
+
 const wikiUpdates = [
   "llm-wiki/session-brief.md",
   "llm-wiki/handoff-prompt.md",
@@ -26,6 +35,92 @@ const obsidianSaveCommand =
 
 function bulletList(items: string[]): string {
   return items.length ? items.map((item) => `- ${item}`).join("\n") : "- None";
+}
+
+function unique(items: string[]): string[] {
+  return [...new Set(items)];
+}
+
+function sanitizeItem(item: string): string {
+  return item
+    .replace(/sk-[A-Za-z0-9_-]+/g, "[redacted-secret]")
+    .replace(/token=[^\s]+/gi, "token=[redacted-secret]")
+    .trim();
+}
+
+function extractSectionBullets(content: string, headings: string[]): string[] {
+  const lines = content.split(/\r?\n/);
+  const bullets: string[] = [];
+  let active = false;
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    const heading = line.replace(/^#+\s*/, "").toLowerCase();
+
+    if (line.startsWith("#")) {
+      active = headings.some((item) => heading.includes(item.toLowerCase()));
+      continue;
+    }
+
+    if (active && line.startsWith("- ")) {
+      bullets.push(sanitizeItem(line.slice(2).replace(/^`|`$/g, "")));
+    }
+  }
+
+  return bullets.filter(Boolean);
+}
+
+function extractValidationCommands(...contents: string[]): string[] {
+  const commands: string[] = [];
+
+  for (const content of contents) {
+    for (const match of content.matchAll(/`([^`]+)`/g)) {
+      const command = sanitizeItem(match[1] ?? "");
+      if (/^(npm(\.cmd)?\s|node\s)/.test(command)) {
+        commands.push(command);
+      }
+    }
+  }
+
+  return unique(commands).slice(-8);
+}
+
+function parseChangedFiles(gitStatusText: string): string[] {
+  return unique(
+    gitStatusText
+      .split(/\r?\n/)
+      .filter((line) => line.trim())
+      .map((line) => line.slice(3).trim().replace(/^"|"$/g, ""))
+      .filter((filePath) => filePath && !filePath.startsWith(".env"))
+  );
+}
+
+export function createSessionHandoffInputFromContext(input: SessionHandoffContextInput): SessionHandoffInput {
+  const sessionBriefText = input.sessionBriefText ?? "";
+  const currentStateText = input.currentStateText ?? "";
+  const handoffText = input.handoffText ?? "";
+  const validationLogText = input.validationLogText ?? "";
+
+  const completedWork = unique([
+    ...extractSectionBullets(sessionBriefText, ["Latest Completed Work", "Completed Work"]),
+    ...extractSectionBullets(currentStateText, ["Latest Completed Work", "Completed Work"]),
+    ...extractSectionBullets(handoffText, ["Latest Completed Work", "Completed Work"])
+  ]);
+  const pendingWork = unique([
+    ...extractSectionBullets(sessionBriefText, ["Next Work", "Next Goal", "Remaining Required Verification"]),
+    ...extractSectionBullets(currentStateText, ["Next Work", "Next Goal", "Remaining Required Verification"]),
+    ...extractSectionBullets(handoffText, ["Next Work", "Next Goal", "Remaining Required Verification"])
+  ]);
+  const validationCommands = extractValidationCommands(sessionBriefText, handoffText, validationLogText);
+  const changedFiles = parseChangedFiles(input.gitStatusText ?? "");
+
+  return {
+    productName: input.productName,
+    completedWork,
+    pendingWork,
+    validationCommands,
+    changedFiles
+  };
 }
 
 export function createSessionHandoffPrompt(input: SessionHandoffInput): string {

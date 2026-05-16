@@ -83,3 +83,9 @@
 - Added CLI command `session:handoff`.
 - Added dashboard/API exposure through `/api/session-handoff`, a Session Handoff panel, copy command, and next-session prompt copy control.
 - Obsidian integration is exposed as a safe command plan only; no automatic write, commit, push, deploy, or secret exposure is performed by the dashboard/CLI plan.
+
+## 2026-05-16 Session Handoff Context Collection Update
+- Added context collection for Session Handoff from `llm-wiki/session-brief.md`, `llm-wiki/current-state.md`, `llm-wiki/handoff-prompt.md`, `llm-wiki/validation-log.md`, and `git status --short` text.
+- CLI `session:handoff` and dashboard `/api/session-handoff` now build handoff plans from current session context instead of fixed placeholder lists.
+- The collector filters `.env` paths from changed-file summaries, redacts obvious secret/token patterns, and limits validation command output to recent entries.
+- Verification: `npm.cmd run typecheck`, `npm.cmd test`, `npm.cmd run build`, `npm.cmd run wiki:check`, `npm.cmd run preview:check` all PASS.

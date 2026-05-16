@@ -1,7 +1,12 @@
+import { execFileSync } from "node:child_process";
 import { createReadStream, existsSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve } from "node:path";
-import { createSessionHandoffPlan } from "../../../packages/core/src/session-handoff.js";
+import {
+  createSessionHandoffInputFromContext,
+  createSessionHandoffPlan,
+  type SessionHandoffContextInput
+} from "../../../packages/core/src/session-handoff.js";
 import { getMobileConnectorReadiness } from "../../../packages/integrations/src/mobile-connectors.js";
 import { createProviderDryRun } from "../../../packages/providers/src/provider-registry.js";
 
@@ -111,6 +116,28 @@ function readValidationLogJson(): string {
   return JSON.stringify({ results });
 }
 
+function readTextIfExists(filePath: string): string {
+  return existsSync(filePath) ? readFileSync(filePath, "utf8") : "";
+}
+
+function readGitStatusText(): string {
+  try {
+    return execFileSync("git", ["status", "--short"], { encoding: "utf8" });
+  } catch {
+    return "";
+  }
+}
+
+function readDefaultSessionContext(): Omit<SessionHandoffContextInput, "productName"> {
+  return {
+    sessionBriefText: readTextIfExists(resolve("llm-wiki", "session-brief.md")),
+    currentStateText: readTextIfExists(resolve("llm-wiki", "current-state.md")),
+    handoffText: readTextIfExists(resolve("llm-wiki", "handoff-prompt.md")),
+    validationLogText: readTextIfExists(resolve("llm-wiki", "validation-log.md")),
+    gitStatusText: readGitStatusText()
+  };
+}
+
 export function readMobileReadinessJson(env: Record<string, string | undefined> = process.env): string {
   return JSON.stringify({ connectors: getMobileConnectorReadiness(env) });
 }
@@ -124,15 +151,12 @@ export function readProviderReadinessJson(env: Record<string, string | undefined
   });
 }
 
-export function readSessionHandoffJson(): string {
+export function readSessionHandoffJson(context = readDefaultSessionContext()): string {
   return JSON.stringify(
-    createSessionHandoffPlan({
+    createSessionHandoffPlan(createSessionHandoffInputFromContext({
       productName: "JH AI Dev Nexus",
-      completedWork: ["Current session summary generation"],
-      pendingWork: ["Update LLM Wiki", "Save Obsidian session", "Start next session from generated prompt"],
-      validationCommands: ["npm.cmd run typecheck", "npm.cmd test", "npm.cmd run build", "npm.cmd run wiki:check"],
-      changedFiles: []
-    })
+      ...context
+    }))
   );
 }
 

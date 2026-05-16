@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createSessionHandoffPlan, createSessionHandoffPrompt } from "./session-handoff.js";
+import {
+  createSessionHandoffInputFromContext,
+  createSessionHandoffPlan,
+  createSessionHandoffPrompt
+} from "./session-handoff.js";
 
 describe("Session Handoff module", () => {
   it("creates a safe session handoff plan with wiki and Obsidian commands", () => {
@@ -42,5 +46,65 @@ describe("Session Handoff module", () => {
     expect(prompt).toContain("Session Handoff module planned");
     expect(prompt).toContain("Run full verification");
     expect(prompt).toContain("npm.cmd test");
+  });
+
+  it("collects handoff input from wiki context, validation logs, and git status text", () => {
+    const input = createSessionHandoffInputFromContext({
+      productName: "JH AI Dev Nexus",
+      sessionBriefText: [
+        "## Latest Completed Work",
+        "- Captured session brief context"
+      ].join("\n"),
+      currentStateText: [
+        "## Latest Completed Work",
+        "- Added Session Handoff panel",
+        "- Connected API exposure",
+        "",
+        "## Next Work",
+        "- Connect handoff to validation logs"
+      ].join("\n"),
+      handoffText: [
+        "## Remaining Required Verification",
+        "- `npm.cmd run build`",
+        "- `npm.cmd run wiki:check`"
+      ].join("\n"),
+      validationLogText: [
+        "## 2026-05-16 Preview Check",
+        "- command: `npm.cmd run preview:check`",
+        "- status: PASS",
+        "  - consoleErrors=0"
+      ].join("\n"),
+      gitStatusText: [
+        " M packages/core/src/session-handoff.ts",
+        "?? packages/core/src/session-handoff.test.ts",
+        " M .env"
+      ].join("\n")
+    });
+
+    expect(input.completedWork).toContain("Added Session Handoff panel");
+    expect(input.completedWork).toContain("Captured session brief context");
+    expect(input.pendingWork).toContain("Connect handoff to validation logs");
+    expect(input.validationCommands).toEqual([
+      "npm.cmd run build",
+      "npm.cmd run wiki:check",
+      "npm.cmd run preview:check"
+    ]);
+    expect(input.changedFiles).toEqual([
+      "packages/core/src/session-handoff.ts",
+      "packages/core/src/session-handoff.test.ts"
+    ]);
+  });
+
+  it("keeps validation commands focused on the most recent entries", () => {
+    const input = createSessionHandoffInputFromContext({
+      productName: "JH AI Dev Nexus",
+      validationLogText: Array.from({ length: 14 }, (_, index) => `- command: \`npm.cmd test -- file-${index}.test.ts\``).join(
+        "\n"
+      )
+    });
+
+    expect(input.validationCommands).toHaveLength(8);
+    expect(input.validationCommands[0]).toBe("npm.cmd test -- file-6.test.ts");
+    expect(input.validationCommands[7]).toBe("npm.cmd test -- file-13.test.ts");
   });
 });

@@ -1,8 +1,14 @@
+import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 import { createDefaultConfig } from "../../../packages/core/src/config.js";
 import { createGoalModeStatus, generateGoalModePackage, validateGoalInput } from "../../../packages/core/src/goal-mode.js";
 import { getHarnessMenu } from "../../../packages/core/src/menu.js";
 import { checkWikiDocuments, getRequiredWikiDocuments } from "../../../packages/core/src/wiki.js";
-import { createSessionHandoffPlan } from "../../../packages/core/src/session-handoff.js";
+import {
+  createSessionHandoffInputFromContext,
+  createSessionHandoffPlan,
+  type SessionHandoffContextInput
+} from "../../../packages/core/src/session-handoff.js";
 import {
   getMobileConnectorReadiness,
   getMobileConnectors,
@@ -30,7 +36,30 @@ export type CommandResult = {
 
 export type CommandDependencies = {
   env?: Record<string, string | undefined>;
+  sessionContext?: Omit<SessionHandoffContextInput, "productName">;
 };
+
+function readTextIfExists(filePath: string): string {
+  return existsSync(filePath) ? readFileSync(filePath, "utf8") : "";
+}
+
+function readGitStatusText(): string {
+  try {
+    return execFileSync("git", ["status", "--short"], { encoding: "utf8" });
+  } catch {
+    return "";
+  }
+}
+
+function readDefaultSessionContext(): Omit<SessionHandoffContextInput, "productName"> {
+  return {
+    sessionBriefText: readTextIfExists("llm-wiki/session-brief.md"),
+    currentStateText: readTextIfExists("llm-wiki/current-state.md"),
+    handoffText: readTextIfExists("llm-wiki/handoff-prompt.md"),
+    validationLogText: readTextIfExists("llm-wiki/validation-log.md"),
+    gitStatusText: readGitStatusText()
+  };
+}
 
 export function runCommand(args: string[], dependencies: CommandDependencies = {}): CommandResult {
   const [command, ...rest] = args;
@@ -277,13 +306,12 @@ export function runCommand(args: string[], dependencies: CommandDependencies = {
   }
 
   if (command === "session:handoff") {
-    const plan = createSessionHandoffPlan({
+    const context = dependencies.sessionContext ?? readDefaultSessionContext();
+    const handoffInput = createSessionHandoffInputFromContext({
       productName: "JH AI Dev Nexus",
-      completedWork: ["Generate current session summary", "Prepare LLM Wiki update plan"],
-      pendingWork: ["Review generated handoff prompt", "Run required verification before session close"],
-      validationCommands: ["npm.cmd run typecheck", "npm.cmd test", "npm.cmd run build", "npm.cmd run wiki:check"],
-      changedFiles: []
+      ...context
     });
+    const plan = createSessionHandoffPlan(handoffInput);
 
     return {
       exitCode: 0,

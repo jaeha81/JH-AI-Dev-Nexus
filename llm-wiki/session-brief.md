@@ -121,3 +121,21 @@
 - `npm.cmd run wiki:check`: PASS
 - `npm.cmd run preview:check`: PASS, desktop/mobile consoleErrors=0
 - Visual check: Session Handoff panel renders on desktop/mobile after restarting the Dev Nexus preview server; `/api/session-handoff` returns JSON.
+
+## 2026-05-16 Session Handoff Context Collection Brief
+
+## Latest Completed Work
+- Added `createSessionHandoffInputFromContext` to collect handoff input from session brief, current state, handoff prompt, validation log, and git status text.
+- Wired CLI `session:handoff` to read current LLM Wiki context and changed-file summaries.
+- Wired dashboard `/api/session-handoff` to use the same context collector.
+- Added tests for context collection, secret/path filtering, recent validation command limits, CLI integration, and dashboard API integration.
+
+## Verification
+- `npm.cmd run typecheck`: PASS
+- `npm.cmd test`: PASS, 17 files / 86 tests
+- `npm.cmd run build`: PASS
+- `npm.cmd run wiki:check`: PASS
+- `npm.cmd run preview:check`: PASS, desktop/mobile consoleErrors=0
+
+## Next Work
+- Improve Session Handoff panel presentation so long generated prompts are summarized first and full text remains copyable without dominating the dashboard column.

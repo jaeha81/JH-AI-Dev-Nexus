@@ -161,4 +161,20 @@ describe("web dashboard preview server", () => {
     expect(json).not.toContain("sk-secret-value");
     expect(json).not.toContain("token=");
   });
+
+  it("builds session handoff JSON from current session context", () => {
+    const json = readSessionHandoffJson({
+      currentStateText: ["## Latest Completed Work", "- Added dashboard context handoff"].join("\n"),
+      handoffText: ["## Next Work", "- Inspect handoff panel"].join("\n"),
+      validationLogText: ["## Preview Check", "- command: `npm.cmd run preview:check`", "- status: PASS"].join("\n"),
+      gitStatusText: " M apps/web-dashboard/src/preview-server.ts"
+    });
+
+    const payload = JSON.parse(json);
+
+    expect(payload.nextSessionPrompt).toContain("Added dashboard context handoff");
+    expect(payload.nextSessionPrompt).toContain("Inspect handoff panel");
+    expect(payload.nextSessionPrompt).toContain("npm.cmd run preview:check");
+    expect(payload.nextSessionPrompt).toContain("apps/web-dashboard/src/preview-server.ts");
+  });
 });

@@ -164,6 +164,23 @@ describe("CLI commands", () => {
     expect(result.stdout).not.toContain("token=");
   });
 
+  it("builds session handoff from supplied current session context", () => {
+    const result = runCommand(["session:handoff"], {
+      sessionContext: {
+        currentStateText: ["## Latest Completed Work", "- Added context collector"].join("\n"),
+        handoffText: ["## Next Work", "- Wire collector into CLI"].join("\n"),
+        validationLogText: ["## Preview Check", "- command: `npm.cmd run preview:check`", "- status: PASS"].join("\n"),
+        gitStatusText: " M apps/cli/src/commands.ts"
+      }
+    });
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Added context collector");
+    expect(result.stdout).toContain("Wire collector into CLI");
+    expect(result.stdout).toContain("npm.cmd run preview:check");
+    expect(result.stdout).toContain("apps/cli/src/commands.ts");
+  });
+
   it("generates JH Goal Mode prompts from CLI args", () => {
     const result = runCommand(["goal", "Add provider adapter tests"]);
 
